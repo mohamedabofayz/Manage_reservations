@@ -4,16 +4,16 @@
 <meta charset="UTF-8" />
 <title>نموذج طلب حجز</title>
 <style>
-    body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; }
-    .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
-    h2 { text-align: center; margin-bottom: 20px; }
-    .row { display: flex; gap: 10px; margin-bottom: 12px; }
-    .row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-    .group-title { font-weight: bold; margin-top: 25px; background: #eee; padding: 8px; border-radius: 6px; }
-    button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; }
-    button:hover { background: #005fcc; }
-    img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
-    #addGuestBtn { background: #28a745; margin-top: 5px; }
+body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+h2 { text-align: center; margin-bottom: 20px; }
+.row { display: flex; gap: 10px; margin-bottom: 12px; }
+.row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+.group-title { font-weight: bold; margin-top: 25px; background: #eee; padding: 8px; border-radius: 6px; }
+button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; }
+button:hover { background: #005fcc; }
+img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
+#addGuestBtn { background: #28a745; margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -57,7 +57,6 @@
     <input type="text" name="reservationNumber" placeholder="رقم الحجز">
 </div>
 
-<!-- منطقة الضيوف -->
 <div id="guestContainer"></div>
 
 <button id="addGuestBtn" type="button">+ إضافة ضيف</button>
@@ -71,7 +70,7 @@
 </div>
 
 <script>
-/* رقم الفاتورة تلقائي */
+// رقم الفاتورة تلقائي
 function generateInvoiceNumber() {
     const now = new Date();
     const y = now.getFullYear();
@@ -82,12 +81,41 @@ function generateInvoiceNumber() {
 }
 document.getElementById("invoiceNumber").value = generateInvoiceNumber();
 
-/* تاريخ اليوم تلقائي */
+// تاريخ اليوم تلقائي
 const t = new Date();
 document.getElementById("todayField").value = t.toLocaleDateString("en-GB").split("/").join("-");
 
-/* إضافة ضيف ديناميكي حتى 4 */
+// ضيوف ديناميكيين
 let guestCount = 0;
+let hotelData = [];
+const HOTELS_API = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec";
+
+async function loadHotels() {
+    try {
+        const res = await fetch(HOTELS_API);
+        hotelData = await res.json();
+        const hotelSelect = document.getElementById("hotelSelect");
+        hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
+        hotelData.forEach(h => hotelSelect.innerHTML += `<option value="${h.name}">${h.name}</option>`);
+    } catch (e) { alert("تعذر تحميل قائمة الفنادق"); }
+}
+loadHotels();
+
+// عند اختيار الفندق
+document.getElementById("hotelSelect").addEventListener("change", (e) => {
+    const selected = hotelData.find(h => h.name === e.target.value);
+    if (selected) {
+        document.querySelector("input[name='hotelPhone']").value = selected.phone || '';
+        document.querySelector("input[name='hotelEmail']").value = selected.email || '';
+        // إعادة حساب المبالغ تلقائياً لكل ضيف
+        for (let i=1;i<=guestCount;i++) calcPrice(i);
+    } else {
+        document.querySelector("input[name='hotelPhone']").value = '';
+        document.querySelector("input[name='hotelEmail']").value = '';
+    }
+});
+
+// إضافة ضيف
 function addGuest() {
     if (guestCount >= 4) { alert("وصلت للحد الأقصى (4 ضيوف)"); return; }
     guestCount++;
@@ -111,78 +139,76 @@ function addGuest() {
                 <option value="رباعية">رباعية</option>
                 <option value="خماسية">خماسية</option>
             </select>
-            <input name="amount${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}">
+            <input name="amount${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}" readonly>
         </div>
     `;
     document.getElementById("guestContainer").appendChild(box);
-
-    document.getElementById(`arrive${guestCount}`).addEventListener("change", () => calcNights(guestCount));
-    document.getElementById(`leave${guestCount}`).addEventListener("change", () => calcNights(guestCount));
-    document.getElementById(`amount${guestCount}`).addEventListener("input", calcTotal);
+    attachPriceCalc(guestCount);
 }
 document.getElementById("addGuestBtn").addEventListener("click", addGuest);
 
-/* حساب الليالي */
+// حساب الليالي
 function calcNights(i) {
     const a = document.getElementById(`arrive${i}`).value;
     const l = document.getElementById(`leave${i}`).value;
-    if (!a || !l) return;
-    const d1 = new Date(a);
-    const d2 = new Date(l);
-    const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
-    document.getElementById(`nights${i}`).value = diff > 0 ? diff : 0;
+    if (!a || !l) return 0;
+    const diff = (new Date(l) - new Date(a))/(1000*60*60*24);
+    return diff > 0 ? diff : 0;
 }
 
-/* حساب الإجمالي */
+// حساب السعر تلقائي
+function calcPrice(i) {
+    const hotelName = document.getElementById("hotelSelect").value;
+    const type = document.getElementById(`type${i}`).value;
+    const checkin = document.getElementById(`arrive${i}`).value;
+    const checkout = document.getElementById(`leave${i}`).value;
+    if (!hotelName || !type || !checkin || !checkout) return;
+
+    const hotel = hotelData.find(h => h.name === hotelName);
+    if (!hotel) return;
+
+    const nights = calcNights(i);
+    document.getElementById(`nights${i}`).value = nights;
+
+    let pricePerNight = 0;
+    switch(type){
+        case 'مفردة': pricePerNight = parseFloat(hotel.single || 0); break;
+        case 'مزدوجة': pricePerNight = parseFloat(hotel.double || 0); break;
+        case 'ثلاثية': pricePerNight = parseFloat(hotel.triple || 0); break;
+        case 'رباعية': pricePerNight = parseFloat(hotel.quadruple || 0); break;
+        case 'خماسية': pricePerNight = parseFloat(hotel.quintuple || 0); break;
+    }
+    document.getElementById(`amount${i}`).value = (pricePerNight * nights).toFixed(2);
+    calcTotal();
+}
+
+function attachPriceCalc(i){
+    document.getElementById(`arrive${i}`).addEventListener("change", () => calcPrice(i));
+    document.getElementById(`leave${i}`).addEventListener("change", () => calcPrice(i));
+    document.getElementById(`type${i}`).addEventListener("change", () => calcPrice(i));
+}
+
+// حساب الإجمالي
 function calcTotal() {
     let sum = 0;
-    for (let i = 1; i <= guestCount; i++) {
+    for (let i=1;i<=guestCount;i++){
         const val = parseFloat(document.getElementById(`amount${i}`)?.value || 0);
         sum += val;
     }
     document.getElementById("totalField").value = sum.toFixed(2);
 }
 
-/* تحميل الفنادق من Web App */
-const HOTELS_API = "https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec";
-let hotelData = [];
-async function loadHotels() {
-    try {
-        const res = await fetch(HOTELS_API);
-        hotelData = await res.json();
-        const hotelSelect = document.getElementById("hotelSelect");
-        hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
-        hotelData.forEach(h => { hotelSelect.innerHTML += `<option value="${h.name}">${h.name}</option>`; });
-    } catch (e) { alert("تعذر تحميل قائمة الفنادق"); }
-}
-loadHotels();
-
-// عند اختيار الفندق، ملء جوال وبريد تلقائي
-document.getElementById("hotelSelect").addEventListener("change", (e) => {
-    const selected = hotelData.find(h => h.name === e.target.value);
-    if (selected) {
-        document.querySelector("input[name='hotelPhone']").value = selected.phone || '';
-        document.querySelector("input[name='hotelEmail']").value = selected.email || '';
-    } else {
-        document.querySelector("input[name='hotelPhone']").value = '';
-        document.querySelector("input[name='hotelEmail']").value = '';
-    }
-});
-
-/* إرسال البيانات إلى Google Sheets */
+// إرسال البيانات
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target).entries());
-    await fetch(HOTELS_API, {
-        method: "POST",
-        body: JSON.stringify(data)
-    });
+    await fetch(HOTELS_API, { method: "POST", body: JSON.stringify(data) });
     alert("تم إرسال الطلب بنجاح 🎉");
     e.target.reset();
     guestCount = 0;
     document.getElementById("guestContainer").innerHTML = "";
     document.getElementById("totalField").value = "";
-    addGuest(); // إضافة أول ضيف بعد إعادة التهيئة
+    addGuest();
 });
 
 // إضافة أول ضيف عند التحميل
