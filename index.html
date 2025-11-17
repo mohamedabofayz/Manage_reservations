@@ -59,7 +59,6 @@
         display: block;
         margin: 10px auto 20px auto;
     }
-
     #addGuestBtn {
         background: #28a745;
         margin-top: 5px;
@@ -109,7 +108,6 @@
     <input type="text" name="رقم الحجز" placeholder="رقم الحجز">
 </div>
 
-
 <!-- منطقة الضيوف -->
 <div id="guestContainer"></div>
 
@@ -140,19 +138,15 @@ function generateInvoiceNumber() {
 
 document.getElementById("invoiceNumber").value = generateInvoiceNumber();
 
-
 /* -----------------------------
    2) تاريخ اليوم تلقائي
 ----------------------------- */
 const t = new Date();
 document.getElementById("todayField").value = t.toLocaleDateString("en-GB").split("/").join("-");
 
-
-
 /* -----------------------------
    3) إضافة ضيف تلقائي (حد أقصى 4)
 ----------------------------- */
-
 let guestCount = 0;
 
 function addGuest() {
@@ -177,7 +171,14 @@ function addGuest() {
         </div>
 
         <div class="row">
-            <input name="نوع ${guestCount}" placeholder="نوع ${guestCount}">
+            <select name="نوع ${guestCount}" id="type${guestCount}">
+                <option value="">— اختر النوع —</option>
+                <option value="مفردة">مفردة</option>
+                <option value="مزدوجة">مزدوجة</option>
+                <option value="ثلاثية">ثلاثية</option>
+                <option value="رباعية">رباعية</option>
+                <option value="خماسية">خماسية</option>
+            </select>
             <input name="مبلغ ${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}">
         </div>
     `;
@@ -193,8 +194,6 @@ function addGuest() {
 }
 
 document.getElementById("addGuestBtn").addEventListener("click", addGuest);
-
-
 
 /* -----------------------------
    4) حساب الليالي تلقائياً
@@ -213,8 +212,6 @@ function calcNights(i) {
     document.getElementById(`nights${i}`).value = diff > 0 ? diff : 0;
 }
 
-
-
 /* -----------------------------
    5) حساب الإجمالي تلقائياً
 ----------------------------- */
@@ -228,8 +225,6 @@ function calcTotal() {
 
     document.getElementById("totalField").value = sum.toFixed(2);
 }
-
-
 
 /* -----------------------------
    6) تحميل أسماء الفنادق من Google Apps Script
@@ -255,8 +250,6 @@ async function loadHotels() {
 
 loadHotels();
 
-
-
 /* -----------------------------
    7) الإرسال إلى Google Sheets
 ----------------------------- */
@@ -278,7 +271,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     addGuest(); // إضافة أول ضيف بعد إعادة التهيئة
 });
 
-// نضيف ضيف مبدئي عند تحميل الصفحة
+// إضافة أول ضيف عند التحميل
 addGuest();
 
 </script>
