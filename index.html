@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>نموذج طلب حجز</title>
+
 <style>
     body {
         font-family: "Tajawal", sans-serif;
@@ -58,8 +59,14 @@
         display: block;
         margin: 10px auto 20px auto;
     }
+
+    #addGuestBtn {
+        background: #28a745;
+        margin-top: 5px;
+    }
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -72,7 +79,7 @@
 
 <!-- بيانات أساسية -->
 <div class="row">
-    <input type="text" name="رقم الفاتورة" id="invoiceId" placeholder="رقم الفاتورة" required readonly>
+    <input type="text" name="رقم الفاتورة" id="invoiceNumber" placeholder="رقم الفاتورة" required>
     <input type="text" name="إسم العميل" placeholder="إسم العميل" required>
 </div>
 
@@ -102,30 +109,11 @@
     <input type="text" name="رقم الحجز" placeholder="رقم الحجز">
 </div>
 
-<!-- ضيوف -->
-<script>
-function guestBlock(i){
-return `
-<div class="group-title">بيانات الضيف ${i}</div>
-<div class="row">
-    <input name="اسم ${i}" placeholder="اسم ${i}">
-    <input name="وصول ${i}" placeholder="وصول ${i}">
-</div>
-<div class="row">
-    <input name="مغادرة ${i}" placeholder="مغادرة ${i}">
-    <input name="ليلي ${i}" placeholder="ليلي ${i}">
-</div>
-<div class="row">
-    <input name="نوع ${i}" placeholder="نوع ${i}">
-    <input class="amount-field" name="مبلغ ${i}" data-index="${i}" placeholder="مبلغ ${i}">
-</div>
-`;
-}
-document.write(guestBlock(1));
-document.write(guestBlock(2));
-document.write(guestBlock(3));
-document.write(guestBlock(4));
-</script>
+
+<!-- منطقة الضيوف -->
+<div id="guestContainer"></div>
+
+<button id="addGuestBtn" type="button">+ إضافة ضيف</button>
 
 <div class="row">
     <input type="text" name="الإجمالي" id="totalField" placeholder="الإجمالي" readonly>
@@ -134,58 +122,118 @@ document.write(guestBlock(4));
 <button type="submit">إرسال الطلب</button>
 
 </form>
-
 </div>
 
-<script>
-// -------------------------------------------------------------
-// 1) رقم الفاتورة تلقائي
-// -------------------------------------------------------------
-function generateInvoiceNumber() {
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
-    const randomPart = Math.floor(1000 + Math.random() * 9000);
 
+<script>
+/* -----------------------------
+   1) رقم الفاتورة تلقائي
+----------------------------- */
+function generateInvoiceNumber() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
     return `IR-${y}${m}${d}-${randomPart}`;
 }
 
-// -------------------------------------------------------------
-// 2) التاريخ تلقائي — تنسيق يوم-شهر-سنة
-// -------------------------------------------------------------
-function setTodayDate() {
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, "0");
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = now.getFullYear();
-    document.getElementById("todayField").value = `${day}-${month}-${year}`;
-}
+document.getElementById("invoiceNumber").value = generateInvoiceNumber();
 
-// -------------------------------------------------------------
-// 3) حساب الإجمالي تلقائي من مبالغ 1 إلى 4
-// -------------------------------------------------------------
-function calculateTotal() {
-    let total = 0;
 
-    document.querySelectorAll(".amount-field").forEach(field => {
-        const val = parseFloat(field.value) || 0;
-        total += val;
-    });
+/* -----------------------------
+   2) تاريخ اليوم تلقائي
+----------------------------- */
+const t = new Date();
+document.getElementById("todayField").value = t.toLocaleDateString("en-GB").split("/").join("-");
 
-    document.getElementById("totalField").value = total.toFixed(2);
-}
 
-// تفعيل التحديث الفوري عند تغيير المبالغ
-document.addEventListener("input", (e) => {
-    if (e.target.classList.contains("amount-field")) {
-        calculateTotal();
+
+/* -----------------------------
+   3) إضافة ضيف تلقائي (حد أقصى 4)
+----------------------------- */
+
+let guestCount = 0;
+
+function addGuest() {
+    if (guestCount >= 4) {
+        alert("وصلت للحد الأقصى (4 ضيوف)");
+        return;
     }
-});
 
-// -------------------------------------------------------------
-// 4) تحميل القائمة التلقائية للفنادق
-// -------------------------------------------------------------
+    guestCount++;
+    const box = document.createElement("div");
+    box.innerHTML = `
+        <div class="group-title">بيانات الضيف ${guestCount}</div>
+
+        <div class="row">
+            <input name="اسم ${guestCount}" placeholder="اسم ${guestCount}">
+            <input type="date" name="وصول ${guestCount}" id="arrive${guestCount}">
+        </div>
+
+        <div class="row">
+            <input type="date" name="مغادرة ${guestCount}" id="leave${guestCount}">
+            <input name="ليلي ${guestCount}" id="nights${guestCount}" placeholder="ليلي ${guestCount}" readonly>
+        </div>
+
+        <div class="row">
+            <input name="نوع ${guestCount}" placeholder="نوع ${guestCount}">
+            <input name="مبلغ ${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}">
+        </div>
+    `;
+
+    document.getElementById("guestContainer").appendChild(box);
+
+    // حساب ليالي الضيف
+    document.getElementById(`arrive${guestCount}`).addEventListener("change", () => calcNights(guestCount));
+    document.getElementById(`leave${guestCount}`).addEventListener("change", () => calcNights(guestCount));
+
+    // تحديث الإجمالي عند إدخال مبلغ
+    document.getElementById(`amount${guestCount}`).addEventListener("input", calcTotal);
+}
+
+document.getElementById("addGuestBtn").addEventListener("click", addGuest);
+
+
+
+/* -----------------------------
+   4) حساب الليالي تلقائياً
+----------------------------- */
+function calcNights(i) {
+    const a = document.getElementById(`arrive${i}`).value;
+    const l = document.getElementById(`leave${i}`).value;
+
+    if (!a || !l) return;
+
+    const d1 = new Date(a);
+    const d2 = new Date(l);
+
+    const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
+
+    document.getElementById(`nights${i}`).value = diff > 0 ? diff : 0;
+}
+
+
+
+/* -----------------------------
+   5) حساب الإجمالي تلقائياً
+----------------------------- */
+function calcTotal() {
+    let sum = 0;
+
+    for (let i = 1; i <= guestCount; i++) {
+        const val = parseFloat(document.getElementById(`amount${i}`)?.value || 0);
+        sum += val;
+    }
+
+    document.getElementById("totalField").value = sum.toFixed(2);
+}
+
+
+
+/* -----------------------------
+   6) تحميل أسماء الفنادق من Google Apps Script
+----------------------------- */
 const HOTELS_API = "https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec";
 
 async function loadHotels() {
@@ -201,40 +249,38 @@ async function loadHotels() {
         });
 
     } catch (e) {
-        alert("تعذر تحميل قائمة الفنادق — تأكد من الرابط");
+        alert("تعذر تحميل قائمة الفنادق");
     }
 }
 
-// -------------------------------------------------------------
-// 5) تهيئة الصفحة عند التحميل
-// -------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("invoiceId").value = generateInvoiceNumber();
-    setTodayDate();
-    loadHotels();
-});
+loadHotels();
 
 
-// -------------------------------------------------------------
-// 6) إرسال البيانات إلى Google Sheets
-// -------------------------------------------------------------
+
+/* -----------------------------
+   7) الإرسال إلى Google Sheets
+----------------------------- */
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const data = Object.fromEntries(new FormData(e.target).entries());
 
-    await fetch("https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec", {
+    await fetch(HOTELS_API, {
         method: "POST",
         body: JSON.stringify(data)
     });
 
-    alert("تم إرسال الطلب بنجاح! 🎉");
+    alert("تم إرسال الطلب بنجاح 🎉");
     e.target.reset();
-
-    // إعادة توليد رقم فاتورة جديد بعد الإرسال
-    document.getElementById("invoiceId").value = generateInvoiceNumber();
-    setTodayDate();
+    guestCount = 0;
+    document.getElementById("guestContainer").innerHTML = "";
+    document.getElementById("totalField").value = "";
+    addGuest(); // إضافة أول ضيف بعد إعادة التهيئة
 });
+
+// نضيف ضيف مبدئي عند تحميل الصفحة
+addGuest();
+
 </script>
 
 </body>
