@@ -72,7 +72,7 @@
 
 <!-- بيانات أساسية -->
 <div class="row">
-    <input type="text" name="رقم الفاتورة" placeholder="رقم الفاتورة" required>
+    <input type="text" name="رقم الفاتورة" id="invoiceId" placeholder="رقم الفاتورة" required readonly>
     <input type="text" name="إسم العميل" placeholder="إسم العميل" required>
 </div>
 
@@ -98,11 +98,11 @@
 </div>
 
 <div class="row">
-    <input type="text" name="تاريخ اليوم" placeholder="تاريخ اليوم" value="">
+    <input type="text" name="تاريخ اليوم" id="todayField" placeholder="تاريخ اليوم">
     <input type="text" name="رقم الحجز" placeholder="رقم الحجز">
 </div>
 
-<!-- المجموعات -->
+<!-- ضيوف -->
 <script>
 function guestBlock(i){
 return `
@@ -117,7 +117,7 @@ return `
 </div>
 <div class="row">
     <input name="نوع ${i}" placeholder="نوع ${i}">
-    <input name="مبلغ ${i}" placeholder="مبلغ ${i}">
+    <input class="amount-field" name="مبلغ ${i}" data-index="${i}" placeholder="مبلغ ${i}">
 </div>
 `;
 }
@@ -128,7 +128,7 @@ document.write(guestBlock(4));
 </script>
 
 <div class="row">
-    <input type="text" name="الإجمالي" placeholder="الإجمالي">
+    <input type="text" name="الإجمالي" id="totalField" placeholder="الإجمالي" readonly>
 </div>
 
 <button type="submit">إرسال الطلب</button>
@@ -138,7 +138,54 @@ document.write(guestBlock(4));
 </div>
 
 <script>
-// 🔹 رابط Web App الذي يرجع قائمة الفنادق
+// -------------------------------------------------------------
+// 1) رقم الفاتورة تلقائي
+// -------------------------------------------------------------
+function generateInvoiceNumber() {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
+
+    return `IR-${y}${m}${d}-${randomPart}`;
+}
+
+// -------------------------------------------------------------
+// 2) التاريخ تلقائي — تنسيق يوم-شهر-سنة
+// -------------------------------------------------------------
+function setTodayDate() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    document.getElementById("todayField").value = `${day}-${month}-${year}`;
+}
+
+// -------------------------------------------------------------
+// 3) حساب الإجمالي تلقائي من مبالغ 1 إلى 4
+// -------------------------------------------------------------
+function calculateTotal() {
+    let total = 0;
+
+    document.querySelectorAll(".amount-field").forEach(field => {
+        const val = parseFloat(field.value) || 0;
+        total += val;
+    });
+
+    document.getElementById("totalField").value = total.toFixed(2);
+}
+
+// تفعيل التحديث الفوري عند تغيير المبالغ
+document.addEventListener("input", (e) => {
+    if (e.target.classList.contains("amount-field")) {
+        calculateTotal();
+    }
+});
+
+// -------------------------------------------------------------
+// 4) تحميل القائمة التلقائية للفنادق
+// -------------------------------------------------------------
 const HOTELS_API = "https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec";
 
 async function loadHotels() {
@@ -154,26 +201,39 @@ async function loadHotels() {
         });
 
     } catch (e) {
-        alert("تعذر تحميل قائمة الفنادق — تأكد من رابط Web App");
+        alert("تعذر تحميل قائمة الفنادق — تأكد من الرابط");
     }
 }
 
-loadHotels();
+// -------------------------------------------------------------
+// 5) تهيئة الصفحة عند التحميل
+// -------------------------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("invoiceId").value = generateInvoiceNumber();
+    setTodayDate();
+    loadHotels();
+});
 
 
-// 🔹 إرسال البيانات إلى Google Sheets
+// -------------------------------------------------------------
+// 6) إرسال البيانات إلى Google Sheets
+// -------------------------------------------------------------
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const data = Object.fromEntries(new FormData(e.target).entries());
 
-    await fetch("ضع_رابط_WebApp_للتسجيل_في_الشيت", {
+    await fetch("https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec", {
         method: "POST",
         body: JSON.stringify(data)
     });
 
     alert("تم إرسال الطلب بنجاح! 🎉");
     e.target.reset();
+
+    // إعادة توليد رقم فاتورة جديد بعد الإرسال
+    document.getElementById("invoiceId").value = generateInvoiceNumber();
+    setTodayDate();
 });
 </script>
 
