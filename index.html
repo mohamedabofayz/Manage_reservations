@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8" />
 <title>نموذج طلب حجز</title>
-
 <style>
     body {
         font-family: "Tajawal", sans-serif;
@@ -65,7 +64,6 @@
     }
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -78,34 +76,33 @@
 
 <!-- بيانات أساسية -->
 <div class="row">
-    <input type="text" name="رقم الفاتورة" id="invoiceNumber" placeholder="رقم الفاتورة" required>
-    <input type="text" name="إسم العميل" placeholder="إسم العميل" required>
+    <input type="text" name="invoice" id="invoiceNumber" placeholder="رقم الفاتورة" required>
+    <input type="text" name="clientName" placeholder="إسم العميل" required>
 </div>
 
 <div class="row">
-    <input type="text" name="رقم الجوال" placeholder="رقم الجوال" required>
-    <input type="text" name="العنوان" placeholder="العنوان">
+    <input type="text" name="clientPhone" placeholder="رقم الجوال" required>
+    <input type="text" name="address" placeholder="العنوان">
 </div>
 
 <div class="row">
-    <input type="email" name="البريد الالكتروني" placeholder="البريد الالكتروني">
+    <input type="email" name="clientEmail" placeholder="البريد الالكتروني">
 </div>
 
-<!-- فندق -->
 <div class="row">
-    <select name="اسم الفندق" id="hotelSelect" required>
+    <select name="hotelName" id="hotelSelect" required>
         <option value="">— تحميل الفنادق… —</option>
     </select>
 </div>
 
 <div class="row">
-    <input type="text" name="جوال الفندق" placeholder="جوال الفندق">
-    <input type="email" name="البريد الفندق" placeholder="البريد الفندق">
+    <input type="text" name="hotelPhone" placeholder="جوال الفندق">
+    <input type="email" name="hotelEmail" placeholder="البريد الفندق">
 </div>
 
 <div class="row">
-    <input type="text" name="تاريخ اليوم" id="todayField" placeholder="تاريخ اليوم">
-    <input type="text" name="رقم الحجز" placeholder="رقم الحجز">
+    <input type="text" name="todayDate" id="todayField" placeholder="تاريخ اليوم">
+    <input type="text" name="reservationNumber" placeholder="رقم الحجز">
 </div>
 
 <!-- منطقة الضيوف -->
@@ -114,19 +111,15 @@
 <button id="addGuestBtn" type="button">+ إضافة ضيف</button>
 
 <div class="row">
-    <input type="text" name="الإجمالي" id="totalField" placeholder="الإجمالي" readonly>
+    <input type="text" name="total" id="totalField" placeholder="الإجمالي" readonly>
 </div>
 
 <button type="submit">إرسال الطلب</button>
-
 </form>
 </div>
 
-
 <script>
-/* -----------------------------
-   1) رقم الفاتورة تلقائي
------------------------------ */
+/* رقم الفاتورة تلقائي */
 function generateInvoiceNumber() {
     const now = new Date();
     const y = now.getFullYear();
@@ -135,43 +128,33 @@ function generateInvoiceNumber() {
     const randomPart = Math.floor(1000 + Math.random() * 9000);
     return `IR-${y}${m}${d}-${randomPart}`;
 }
-
 document.getElementById("invoiceNumber").value = generateInvoiceNumber();
 
-/* -----------------------------
-   2) تاريخ اليوم تلقائي
------------------------------ */
+/* تاريخ اليوم تلقائي */
 const t = new Date();
 document.getElementById("todayField").value = t.toLocaleDateString("en-GB").split("/").join("-");
 
-/* -----------------------------
-   3) إضافة ضيف تلقائي (حد أقصى 4)
------------------------------ */
+/* إضافة ضيف ديناميكي حتى 4 */
 let guestCount = 0;
-
 function addGuest() {
     if (guestCount >= 4) {
         alert("وصلت للحد الأقصى (4 ضيوف)");
         return;
     }
-
     guestCount++;
     const box = document.createElement("div");
     box.innerHTML = `
         <div class="group-title">بيانات الضيف ${guestCount}</div>
-
         <div class="row">
-            <input name="اسم ${guestCount}" placeholder="اسم ${guestCount}">
-            <input type="date" name="وصول ${guestCount}" id="arrive${guestCount}">
+            <input name="name${guestCount}" placeholder="اسم ${guestCount}">
+            <input type="date" name="checkin${guestCount}" id="arrive${guestCount}">
         </div>
-
         <div class="row">
-            <input type="date" name="مغادرة ${guestCount}" id="leave${guestCount}">
-            <input name="ليلي ${guestCount}" id="nights${guestCount}" placeholder="ليلي ${guestCount}" readonly>
+            <input type="date" name="checkout${guestCount}" id="leave${guestCount}">
+            <input name="nights${guestCount}" id="nights${guestCount}" placeholder="ليلي ${guestCount}" readonly>
         </div>
-
         <div class="row">
-            <select name="نوع ${guestCount}" id="type${guestCount}">
+            <select name="type${guestCount}" id="type${guestCount}">
                 <option value="">— اختر النوع —</option>
                 <option value="مفردة">مفردة</option>
                 <option value="مزدوجة">مزدوجة</option>
@@ -179,90 +162,62 @@ function addGuest() {
                 <option value="رباعية">رباعية</option>
                 <option value="خماسية">خماسية</option>
             </select>
-            <input name="مبلغ ${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}">
+            <input name="amount${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}">
         </div>
     `;
-
     document.getElementById("guestContainer").appendChild(box);
-
-    // حساب ليالي الضيف
     document.getElementById(`arrive${guestCount}`).addEventListener("change", () => calcNights(guestCount));
     document.getElementById(`leave${guestCount}`).addEventListener("change", () => calcNights(guestCount));
-
-    // تحديث الإجمالي عند إدخال مبلغ
     document.getElementById(`amount${guestCount}`).addEventListener("input", calcTotal);
 }
-
 document.getElementById("addGuestBtn").addEventListener("click", addGuest);
 
-/* -----------------------------
-   4) حساب الليالي تلقائياً
------------------------------ */
+/* حساب الليالي */
 function calcNights(i) {
     const a = document.getElementById(`arrive${i}`).value;
     const l = document.getElementById(`leave${i}`).value;
-
     if (!a || !l) return;
-
     const d1 = new Date(a);
     const d2 = new Date(l);
-
     const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
-
     document.getElementById(`nights${i}`).value = diff > 0 ? diff : 0;
 }
 
-/* -----------------------------
-   5) حساب الإجمالي تلقائياً
------------------------------ */
+/* حساب الإجمالي */
 function calcTotal() {
     let sum = 0;
-
     for (let i = 1; i <= guestCount; i++) {
         const val = parseFloat(document.getElementById(`amount${i}`)?.value || 0);
         sum += val;
     }
-
     document.getElementById("totalField").value = sum.toFixed(2);
 }
 
-/* -----------------------------
-   6) تحميل أسماء الفنادق من Google Apps Script
------------------------------ */
+/* تحميل الفنادق من Web App */
 const HOTELS_API = "https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec";
-
 async function loadHotels() {
     try {
         let res = await fetch(HOTELS_API);
         let hotels = await res.json();
-
         let hotelSelect = document.getElementById("hotelSelect");
         hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
-
         hotels.forEach(h => {
             hotelSelect.innerHTML += `<option value="${h}">${h}</option>`;
         });
-
     } catch (e) {
         alert("تعذر تحميل قائمة الفنادق");
     }
 }
-
 loadHotels();
 
-/* -----------------------------
-   7) الإرسال إلى Google Sheets
------------------------------ */
+/* إرسال البيانات إلى Google Sheets */
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const data = Object.fromEntries(new FormData(e.target).entries());
-
     await fetch(HOTELS_API, {
         method: "POST",
         body: JSON.stringify(data)
     });
-
     alert("تم إرسال الطلب بنجاح 🎉");
     e.target.reset();
     guestCount = 0;
@@ -273,7 +228,6 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
 
 // إضافة أول ضيف عند التحميل
 addGuest();
-
 </script>
 
 </body>
