@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نمـوذج طلب حجز — iRoom</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --accent:#0b5fff;
+      --muted:#6b7280;
+      --success:#16a34a;
+      --danger:#ef4444;
+      --glass: rgba(11,95,255,0.06);
+    }
+    *{box-sizing:border-box;font-family:'Cairo',sans-serif}
+    body{margin:0;background:linear-gradient(180deg,#f3f6ff 0%,var(--bg) 100%);padding:28px}
+    .container{max-width:1100px;margin:0 auto}
+    .card{background:var(--card);border-radius:12px;padding:22px;box-shadow:0 6px 24px rgba(15,23,42,0.06)}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+    header img{height:56px}
+    h1{margin:0;font-size:20px;color:#0f172a}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    form{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+    label{display:block;font-size:13px;color:#111827;margin-bottom:6px}
+    input[type="text"], input[type="email"], input[type="date"], input[type="number"], select{
+      width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:#fff;font-size:14px
+    }
+    .full{grid-column:1/4}
+    .two{grid-column:span 2}
+    .small{padding:8px;font-size:13px}
+    .section-title{grid-column:1/4;margin-top:12px;font-weight:600;color:#0b1220}
+    .rows{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:end}
+    .rows label{font-size:12px;color:var(--muted)}
+    .btns{grid-column:1/4;display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+    button{padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+    button.secondary{background:transparent;color:var(--accent);border:1px solid var(--glass)}
+    .note{font-size:13px;color:var(--muted)}
+    .alert{padding:10px;border-radius:8px;font-size:14px;display:none}
+    .alert.success{background:rgba(16,185,129,0.08);color:var(--success);border:1px solid rgba(16,185,129,0.12)}
+    .alert.error{background:rgba(239,68,68,0.06);color:var(--danger);border:1px solid rgba(239,68,68,0.08)}
+    @media (max-width:900px){form{grid-template-columns:repeat(2,1fr)} .rows{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:560px){form{grid-template-columns:1fr} .rows{grid-template-columns:repeat(2,1fr)} header img{height:48px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <img src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="iRoom logo" />
+        <div>
+          <h1>نموذج طلب حجز</h1>
+          <p class="lead">املأ البيانات أدناه لإرسال صف الحجز مباشرة إلى Google Sheets — سريع، نظيف، ومضبوط.</p>
+        </div>
+      </header>
+
+      <div class="alert success" id="successBox">تم الإرسال بنجاح!</div>
+      <div class="alert error" id="errorBox">حدث خطأ أثناء الإرسال.</div>
+
+      <form id="bookingForm" autocomplete="off">
+        <!-- الأساسيات -->
+        <div class="full">
+          <label for="invoice">رقم الفاتورة</label>
+          <input id="invoice" name="invoice" type="text" required placeholder="مثال: INV-2025-001">
+        </div>
+
+        <div>
+          <label for="clientName">إسم العميل</label>
+          <input id="clientName" name="clientName" type="text" required>
+        </div>
+
+        <div>
+          <label for="clientPhone">رقم الجوال</label>
+          <input id="clientPhone" name="clientPhone" type="text" required>
+        </div>
+
+        <div>
+          <label for="address">العنوان</label>
+          <input id="address" name="address" type="text" >
+        </div>
+
+        <div>
+          <label for="clientEmail">البريد الالكتروني</label>
+          <input id="clientEmail" name="clientEmail" type="email">
+        </div>
+
+        <div>
+          <label for="hotelName">اسم الفندق</label>
+          <input id="hotelName" name="hotelName" type="text">
+        </div>
+
+        <div>
+          <label for="hotelPhone">جوال الفندق</label>
+          <input id="hotelPhone" name="hotelPhone" type="text">
+        </div>
+
+        <div>
+          <label for="hotelEmail">البريد الفندق</label>
+          <input id="hotelEmail" name="hotelEmail" type="email">
+        </div>
+
+        <div>
+          <label for="todayDate">تاريخ اليوم</label>
+          <input id="todayDate" name="todayDate" type="date" required>
+        </div>
+
+        <div>
+          <label for="reservationNumber">رقم الحجز</label>
+          <input id="reservationNumber" name="reservationNumber" type="text">
+        </div>
+
+        <!-- تكرار للصفوف 1..4 -->
+        <div class="section-title">بيانات الغرف/الضيوف (حتى 4 خطوط)</div>
+
+        <!-- Row 1 -->
+        <div class="rows full" style="grid-column:1/4">
+          <div>
+            <label for="name1">اسم 1</label>
+            <input id="name1" name="name1" type="text">
+          </div>
+          <div>
+            <label for="checkin1">وصول 1</label>
+            <input id="checkin1" name="checkin1" type="date">
+          </div>
+          <div>
+            <label for="checkout1">مغادرة 1</label>
+            <input id="checkout1" name="checkout1" type="date">
+          </div>
+          <div>
+            <label for="nights1">ليلي 1</label>
+            <input id="nights1" name="nights1" type="number" min="0" class="small">
+          </div>
+          <div>
+            <label for="type1">نوع 1</label>
+            <input id="type1" name="type1" type="text">
+          </div>
+          <div>
+            <label for="amount1">مبلغ 1</label>
+            <input id="amount1" name="amount1" type="number" min="0" step="0.01" class="small" value="0">
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="rows full" style="grid-column:1/4">
+          <div><label for="name2">اسم 2</label><input id="name2" name="name2" type="text"></div>
+          <div><label for="checkin2">وصول 2</label><input id="checkin2" name="checkin2" type="date"></div>
+          <div><label for="checkout2">مغادرة 2</label><input id="checkout2" name="checkout2" type="date"></div>
+          <div><label for="nights2">ليلي 2</label><input id="nights2" name="nights2" type="number" min="0" class="small"></div>
+          <div><label for="type2">نوع 2</label><input id="type2" name="type2" type="text"></div>
+          <div><label for="amount2">مبلغ 2</label><input id="amount2" name="amount2" type="number" min="0" step="0.01" class="small" value="0"></div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="rows full" style="grid-column:1/4">
+          <div><label for="name3">اسم 3</label><input id="name3" name="name3" type="text"></div>
+          <div><label for="checkin3">وصول 3</label><input id="checkin3" name="checkin3" type="date"></div>
+          <div><label for="checkout3">مغادرة 3</label><input id="checkout3" name="checkout3" type="date"></div>
+          <div><label for="nights3">ليلي 3</label><input id="nights3" name="nights3" type="number" min="0" class="small"></div>
+          <div><label for="type3">نوع 3</label><input id="type3" name="type3" type="text"></div>
+          <div><label for="amount3">مبلغ 3</label><input id="amount3" name="amount3" type="number" min="0" step="0.01" class="small" value="0"></div>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="rows full" style="grid-column:1/4">
+          <div><label for="name4">اسم 4</label><input id="name4" name="name4" type="text"></div>
+          <div><label for="checkin4">وصول 4</label><input id="checkin4" name="checkin4" type="date"></div>
+          <div><label for="checkout4">مغادرة 4</label><input id="checkout4" name="checkout4" type="date"></div>
+          <div><label for="nights4">ليلي 4</label><input id="nights4" name="nights4" type="number" min="0" class="small"></div>
+          <div><label for="type4">نوع 4</label><input id="type4" name="type4" type="text"></div>
+          <div><label for="amount4">مبلغ 4</label><input id="amount4" name="amount4" type="number" min="0" step="0.01" class="small" value="0"></div>
+        </div>
+
+        <!-- الإجمالي -->
+        <div>
+          <label for="total">الإجمالي</label>
+          <input id="total" name="total" type="number" readonly value="0">
+          <p class="note">الإجمالي يحسب آليًا من مبالغ الخطوط الأربعة.</p>
+        </div>
+
+        <div class="btns full">
+          <button type="button" id="calculateBtn" class="secondary">حسـب الإجمالي</button>
+          <button type="submit" id="sendBtn">أرســل إلى Google Sheet</button>
+        </div>
+      </form>
+
+      <p class="note" style="margin-top:14px">ملاحظة: يرجى التأكد من نشر Web App (Google Apps Script) وضبط صلاحية الوصول. إذا أردت، أرسل لي رابط Web App وسأنسق الكود ليعمل مباشرة.</p>
+    </div>
+  </div>
+
+<script>
+  // ضع رابط Web App الخاص بك هنا:
+  const WEB_APP_URL = "https://script.google.com/macros/s/WEB_APP_DEPLOY_ID/exec";
+
+  const form = document.getElementById('bookingForm');
+  const successBox = document.getElementById('successBox');
+  const errorBox = document.getElementById('errorBox');
+  const totalInput = document.getElementById('total');
+
+  // تعيين تاريخ اليوم تلقائياً
+  (function setToday(){
+    const today = new Date();
+    const tzOffset = today.getTimezoneOffset() * 60000;
+    const localISO = (new Date(today - tzOffset)).toISOString().slice(0,10);
+    document.getElementById('todayDate').value = localISO;
+  })();
+
+  // حساب الإجمالي
+  function calculateTotal(){
+    const nums = [1,2,3,4].map(i=>{
+      const v = parseFloat(document.getElementById('amount'+i).value) || 0;
+      return v;
+    });
+    const sum = nums.reduce((a,b)=>a+b,0);
+    totalInput.value = sum.toFixed(2);
+    return sum;
+  }
+
+  document.getElementById('calculateBtn').addEventListener('click', ()=>{
+    calculateTotal();
+    successBox.style.display='block'; successBox.textContent = 'تم تحديث الإجمالي ✔️'; setTimeout(()=>successBox.style.display='none',1800);
+  });
+
+  // منع إرسال مزدوج
+  let sending = false;
+
+  form.addEventListener('submit', async (ev)=>{
+    ev.preventDefault();
+    if(sending) return;
+    sending = true;
+    successBox.style.display='none'; errorBox.style.display='none';
+    calculateTotal();
+
+    const data = {};
+    // ترتيب الحقول مطابق للترتيب المطلوب في الشيت
+    const keys = [
+      'invoice','clientName','clientPhone','address','clientEmail',
+      'hotelName','hotelPhone','hotelEmail','todayDate','reservationNumber',
+      'name1','checkin1','checkout1','nights1','type1','amount1',
+      'name2','checkin2','checkout2','nights2','type2','amount2',
+      'name3','checkin3','checkout3','nights3','type3','amount3',
+      'name4','checkin4','checkout4','nights4','type4','amount4',
+      'total'
+    ];
+    keys.forEach(k=>{
+      const el = document.getElementById(k);
+      data[k] = el ? el.value : '';
+    });
+
+    // إضافة طابع زمني للتتبع (اختياري)
+    data._timestamp = new Date().toISOString();
+
+    // إرسال للـ Google Apps Script (POST JSON)
+    try{
+      document.getElementById('sendBtn').textContent = '...جاري الإرسال';
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      const text = await res.text();
+      if(res.ok){
+        successBox.style.display='block';
+        successBox.textContent = 'تم الإرسال بنجاح — تم إدخال صف في Google Sheets';
+        form.reset();
+        setTimeout(()=>{ successBox.style.display='none'; },3000);
+      } else {
+        throw new Error('HTTP ' + res.status + ' — ' + text);
+      }
+    } catch (err){
+      console.error(err);
+      errorBox.style.display='block';
+      errorBox.textContent = 'تعذر الإرسال: ' + (err.message||err);
+    } finally {
+      document.getElementById('sendBtn').textContent = 'أرســل إلى Google Sheet';
+      sending = false;
+    }
+  });
+</script>
+</body>
+</html>
