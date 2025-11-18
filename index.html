@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>نموذج طلب حجز</title>
+
 <style>
 body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; }
 .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
@@ -15,6 +16,7 @@ button:hover { background: #005fcc; }
 img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
 #addGuestBtn { background: #28a745; margin-top: 5px; }
 </style>
+
 </head>
 <body>
 
@@ -26,7 +28,6 @@ img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
 
 <form id="bookingForm">
 
-<!-- بيانات أساسية -->
 <div class="row">
     <input type="text" name="invoice" id="invoiceNumber" placeholder="رقم الفاتورة" required>
     <input type="text" name="clientName" placeholder="إسم العميل" required>
@@ -70,54 +71,47 @@ img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
 </div>
 
 <script>
+
 // رقم الفاتورة تلقائي
 function generateInvoiceNumber() {
     const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
-    const randomPart = Math.floor(1000 + Math.random() * 9000);
-    return `IR-${y}${m}${d}-${randomPart}`;
+    return `IR-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
 }
 document.getElementById("invoiceNumber").value = generateInvoiceNumber();
 
-// تاريخ اليوم تلقائي
-const t = new Date();
-document.getElementById("todayField").value = t.toLocaleDateString("en-GB").split("/").join("-");
+// تاريخ اليوم
+document.getElementById("todayField").value = new Date().toISOString().slice(0,10).split("-").reverse().join("-");
 
-// ضيوف ديناميكيين
+// بيانات الفنادق
 let guestCount = 0;
 let hotelData = [];
 const HOTELS_API = "https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec";
 
+// تحميل الفنادق
 async function loadHotels() {
-    try {
-        const res = await fetch(HOTELS_API);
-        hotelData = await res.json();
-        const hotelSelect = document.getElementById("hotelSelect");
-        hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
-        hotelData.forEach(h => hotelSelect.innerHTML += `<option value="${h.name}">${h.name}</option>`);
-    } catch (e) { alert("تعذر تحميل قائمة الفنادق"); }
+    const res = await fetch(HOTELS_API);
+    hotelData = await res.json();
+    const hotelSelect = document.getElementById("hotelSelect");
+    hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
+    hotelData.forEach(h => {
+        hotelSelect.innerHTML += `<option value="${h.name}">${h.name} — ${h.fromDate} إلى ${h.toDate}</option>`;
+    });
 }
 loadHotels();
 
-// عند اختيار الفندق
+// عند اختيار فندق
 document.getElementById("hotelSelect").addEventListener("change", (e) => {
     const selected = hotelData.find(h => h.name === e.target.value);
     if (selected) {
-        document.querySelector("input[name='hotelPhone']").value = selected.phone || '';
-        document.querySelector("input[name='hotelEmail']").value = selected.email || '';
-
+        document.querySelector("input[name='hotelPhone']").value = selected.phone;
+        document.querySelector("input[name='hotelEmail']").value = selected.email;
         for (let i=1;i<=guestCount;i++) calcPrice(i);
-    } else {
-        document.querySelector("input[name='hotelPhone']").value = '';
-        document.querySelector("input[name='hotelEmail']").value = '';
     }
 });
 
 // إضافة ضيف
 function addGuest() {
-    if (guestCount >= 4) { alert("وصلت للحد الأقصى (4 ضيوف)"); return; }
+    if (guestCount >= 4) return alert("وصلت للحد الأقصى (4 ضيوف)");
     guestCount++;
 
     const box = document.createElement("div");
@@ -125,18 +119,17 @@ function addGuest() {
         <div class="group-title">بيانات الضيف ${guestCount}</div>
 
         <div class="row">
-            <input name="name${guestCount}" placeholder="اسم ${guestCount}">
-            <input type="date" name="checkin${guestCount}" id="arrive${guestCount}">
+            <input name="name${guestCount}" placeholder="اسم الضيف">
+            <input type="date" id="arrive${guestCount}" name="checkin${guestCount}">
         </div>
 
         <div class="row">
-            <input type="date" name="checkout${guestCount}" id="leave${guestCount}">
-            <input name="nights${guestCount}" id="nights${guestCount}" placeholder="ليلي ${guestCount}" readonly>
-            <input type="number" name="rooms${guestCount}" id="rooms${guestCount}" placeholder="عدد الغرف" min="1" value="1">
+            <input type="date" id="leave${guestCount}" name="checkout${guestCount}">
+            <input id="nights${guestCount}" name="nights${guestCount}" placeholder="ليلي" readonly>
         </div>
 
         <div class="row">
-            <select name="type${guestCount}" id="type${guestCount}">
+            <select id="type${guestCount}" name="type${guestCount}">
                 <option value="">— اختر النوع —</option>
                 <option value="مفردة">مفردة</option>
                 <option value="مزدوجة">مزدوجة</option>
@@ -144,17 +137,20 @@ function addGuest() {
                 <option value="رباعية">رباعية</option>
                 <option value="خماسية">خماسية</option>
             </select>
-            <input name="amount${guestCount}" id="amount${guestCount}" placeholder="مبلغ ${guestCount}" readonly>
+
+            <input type="number" min="1" value="1" id="rooms${guestCount}" name="rooms${guestCount}" placeholder="عدد الغرف">
+        </div>
+
+        <div class="row">
+            <input id="amount${guestCount}" name="amount${guestCount}" placeholder="المبلغ" readonly>
         </div>
     `;
-
     document.getElementById("guestContainer").appendChild(box);
 
     attachPriceCalc(guestCount);
-
-    // السطر الذي يحل المشكلة
     calcPrice(guestCount);
 }
+
 document.getElementById("addGuestBtn").addEventListener("click", addGuest);
 
 // حساب الليالي
@@ -162,7 +158,6 @@ function calcNights(i) {
     const a = document.getElementById(`arrive${i}`).value;
     const l = document.getElementById(`leave${i}`).value;
     if (!a || !l) return 0;
-
     const diff = (new Date(l) - new Date(a)) / (1000 * 60 * 60 * 24);
     return diff > 0 ? diff : 0;
 }
@@ -178,68 +173,64 @@ function calcPrice(i) {
     if (!hotelName || !type || !checkin || !checkout) return;
 
     const hotel = hotelData.find(h => h.name === hotelName);
-    if (!hotel) return;
+
+    // التحقق من الفترة
+    if (checkin < hotel.fromDate || checkout > hotel.toDate) {
+        document.getElementById(`amount${i}`).value = "";
+        document.getElementById(`nights${i}`).value = "0";
+        calcTotal();
+        return;
+    }
 
     const nights = calcNights(i);
-
-    document.getElementById(`nights${i}`).value = `${nights} ليلي × ${rooms}`;
+    document.getElementById(`nights${i}`).value = `${nights} ليلة × ${rooms} غرفة`;
 
     let pricePerNight = 0;
     switch(type){
-        case 'مفردة': pricePerNight = parseFloat(hotel.single || 0); break;
-        case 'مزدوجة': pricePerNight = parseFloat(hotel.double || 0); break;
-        case 'ثلاثية': pricePerNight = parseFloat(hotel.triple || 0); break;
-        case 'رباعية': pricePerNight = parseFloat(hotel.quadruple || 0); break;
-        case 'خماسية': pricePerNight = parseFloat(hotel.quintuple || 0); break;
+        case 'مفردة': pricePerNight = hotel.single; break;
+        case 'مزدوجة': pricePerNight = hotel.double; break;
+        case 'ثلاثية': pricePerNight = hotel.triple; break;
+        case 'رباعية': pricePerNight = hotel.quadruple; break;
+        case 'خماسية': pricePerNight = hotel.quintuple; break;
     }
 
-    const finalAmount = pricePerNight * nights * rooms;
-    document.getElementById(`amount${i}`).value = finalAmount.toFixed(2);
+    document.getElementById(`amount${i}`).value = (pricePerNight * nights * rooms).toFixed(2);
 
     calcTotal();
 }
 
 // ربط الأحداث
 function attachPriceCalc(i){
-    document.getElementById(`arrive${i}`).addEventListener("change", () => calcPrice(i));
-    document.getElementById(`leave${i}`).addEventListener("change", () => calcPrice(i));
-    document.getElementById(`type${i}`).addEventListener("change", () => calcPrice(i));
-    document.getElementById(`rooms${i}`).addEventListener("change", () => calcPrice(i));
+    ["arrive", "leave", "type", "rooms"].forEach(field => {
+        document.getElementById(`${field}${i}`).addEventListener("change", () => calcPrice(i));
+    });
 }
 
-// الإجمالي
+// حساب الإجمالي
 function calcTotal() {
     let sum = 0;
     for (let i=1;i<=guestCount;i++){
-        const val = parseFloat(document.getElementById(`amount${i}`)?.value || 0);
-        sum += val;
+        sum += parseFloat(document.getElementById(`amount${i}`)?.value || 0);
     }
     document.getElementById("totalField").value = sum.toFixed(2);
 }
 
-// الإرسال
+// إرسال البيانات
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const data = Object.fromEntries(new FormData(e.target).entries());
-
-    await fetch(HOTELS_API, { 
-        method: "POST", 
-        body: JSON.stringify(data) 
-    });
-
+    await fetch(HOTELS_API, { method: "POST", body: JSON.stringify(data) });
     alert("تم إرسال الطلب بنجاح 🎉");
-
     e.target.reset();
     guestCount = 0;
     document.getElementById("guestContainer").innerHTML = "";
     document.getElementById("totalField").value = "";
-
     addGuest();
 });
 
-// إضافة أول ضيف
+// إضافة الضيف الأول
 addGuest();
+
 </script>
 
 </body>
