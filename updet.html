@@ -63,7 +63,7 @@
 let hotelsData = [];
 
 async function fetchHotels() {
-  const response = await fetch('YOUR_WEB_APP_URL'); // ضع هنا رابط Web App بعد نشره
+  const response = await fetch('https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec'); // ضع هنا رابط Web App بعد نشره
   hotelsData = await response.json();
   const select = document.getElementById('hotelSelect');
   hotelsData.forEach((hotel, index) => {
@@ -129,10 +129,10 @@ async function updateHotel() {
   };
 
   try {
-    const response = await fetch('YOUR_WEB_APP_URL', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {'Content-Type': 'application/json'}
+    const response = await fetch('https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOyteSBycZP2Y0P5bRUXhnLCNKuQcAiSRpyjPO1xfK0R0teCKq/exec', {
+        method: 'POST',
+  body: JSON.stringify(payload),
+  headers: {'Content-Type': 'application/json'}
     });
     const result = await response.json();
     if(result.status === "success") {
