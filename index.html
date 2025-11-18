@@ -107,7 +107,6 @@ document.getElementById("hotelSelect").addEventListener("change", (e) => {
     if (selected) {
         document.querySelector("input[name='hotelPhone']").value = selected.phone || '';
         document.querySelector("input[name='hotelEmail']").value = selected.email || '';
-        // إعادة حساب المبالغ تلقائياً لكل ضيف
         for (let i=1;i<=guestCount;i++) calcPrice(i);
     } else {
         document.querySelector("input[name='hotelPhone']").value = '';
@@ -119,6 +118,7 @@ document.getElementById("hotelSelect").addEventListener("change", (e) => {
 function addGuest() {
     if (guestCount >= 4) { alert("وصلت للحد الأقصى (4 ضيوف)"); return; }
     guestCount++;
+
     const box = document.createElement("div");
     box.innerHTML = `
         <div class="group-title">بيانات الضيف ${guestCount}</div>
@@ -126,10 +126,13 @@ function addGuest() {
             <input name="name${guestCount}" placeholder="اسم ${guestCount}">
             <input type="date" name="checkin${guestCount}" id="arrive${guestCount}">
         </div>
+
         <div class="row">
             <input type="date" name="checkout${guestCount}" id="leave${guestCount}">
             <input name="nights${guestCount}" id="nights${guestCount}" placeholder="ليلي ${guestCount}" readonly>
+            <input type="number" name="rooms${guestCount}" id="rooms${guestCount}" placeholder="عدد الغرف" min="1" value="1">
         </div>
+
         <div class="row">
             <select name="type${guestCount}" id="type${guestCount}">
                 <option value="">— اختر النوع —</option>
@@ -145,7 +148,6 @@ function addGuest() {
     document.getElementById("guestContainer").appendChild(box);
     attachPriceCalc(guestCount);
 }
-document.getElementById("addGuestBtn").addEventListener("click", addGuest);
 
 // حساب الليالي
 function calcNights(i) {
@@ -156,19 +158,21 @@ function calcNights(i) {
     return diff > 0 ? diff : 0;
 }
 
-// حساب السعر تلقائي
+// حساب السعر
 function calcPrice(i) {
     const hotelName = document.getElementById("hotelSelect").value;
     const type = document.getElementById(`type${i}`).value;
     const checkin = document.getElementById(`arrive${i}`).value;
     const checkout = document.getElementById(`leave${i}`).value;
+    const rooms = parseInt(document.getElementById(`rooms${i}`).value || 1);
+
     if (!hotelName || !type || !checkin || !checkout) return;
 
     const hotel = hotelData.find(h => h.name === hotelName);
     if (!hotel) return;
 
     const nights = calcNights(i);
-    document.getElementById(`nights${i}`).value = nights;
+    document.getElementById(`nights${i}`).value = `${nights} ليلي × ${rooms}`;
 
     let pricePerNight = 0;
     switch(type){
@@ -178,7 +182,9 @@ function calcPrice(i) {
         case 'رباعية': pricePerNight = parseFloat(hotel.quadruple || 0); break;
         case 'خماسية': pricePerNight = parseFloat(hotel.quintuple || 0); break;
     }
-    document.getElementById(`amount${i}`).value = (pricePerNight * nights).toFixed(2);
+
+    document.getElementById(`amount${i}`).value = (pricePerNight * nights * rooms).toFixed(2);
+
     calcTotal();
 }
 
@@ -186,6 +192,7 @@ function attachPriceCalc(i){
     document.getElementById(`arrive${i}`).addEventListener("change", () => calcPrice(i));
     document.getElementById(`leave${i}`).addEventListener("change", () => calcPrice(i));
     document.getElementById(`type${i}`).addEventListener("change", () => calcPrice(i));
+    document.getElementById(`rooms${i}`).addEventListener("change", () => calcPrice(i));
 }
 
 // حساب الإجمالي
