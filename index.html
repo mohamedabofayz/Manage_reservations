@@ -184,44 +184,55 @@ function calcNights(i) {
 function calcPrice(i) {
     const hotelName = document.getElementById("hotelSelect").value;
     const type = document.getElementById(`type${i}`).value;
-    const checkin = document.getElementById(`arrive${i}`).value;
-    const checkout = document.getElementById(`leave${i}`).value;
+    const checkin = new Date(document.getElementById(`arrive${i}`).value);
+    const checkout = new Date(document.getElementById(`leave${i}`).value);
     const rooms = parseInt(document.getElementById(`rooms${i}`).value || 1);
 
     if (!hotelName || !type || !checkin || !checkout) return;
 
-    // جلب كل الفترات للفندق المختار
     const matchingHotels = hotelData.filter(h => h.name === hotelName);
 
-    // البحث عن فترة مناسبة
-    const hotel = matchingHotels.find(h => checkin >= h.fromDate && checkout <= h.toDate);
+    let totalAmount = 0;
+    let totalNights = 0;
 
-    if (!hotel) {
-        // لا توجد فترة مناسبة
-        document.getElementById(`amount${i}`).value = "";
-        document.getElementById(`nights${i}`).value = "0";
-        calcTotal();
-        return;
+    let current = new Date(checkin);
+
+    while (current < checkout) {
+        // البحث عن فترة الفندق الحالية
+        const hotel = matchingHotels.find(h => current >= new Date(h.fromDate) && current < new Date(h.toDate));
+        if (!hotel) {
+            // فترة غير متاحة → إلغاء الحساب
+            document.getElementById(`amount${i}`).value = "";
+            document.getElementById(`nights${i}`).value = "0";
+            calcTotal();
+            return;
+        }
+
+        // تحديد نهاية الفترة المتاحة
+        const periodEnd = new Date(hotel.toDate) < checkout ? new Date(hotel.toDate) : new Date(checkout);
+        const nights = (periodEnd - current) / (1000 * 60 * 60 * 24);
+
+        let pricePerNight = 0;
+        switch(type){
+            case 'مفردة': pricePerNight = hotel.single; break;
+            case 'مزدوجة': pricePerNight = hotel.double; break;
+            case 'ثلاثية': pricePerNight = hotel.triple; break;
+            case 'رباعية': pricePerNight = hotel.quadruple; break;
+            case 'خماسية': pricePerNight = hotel.quintuple; break;
+        }
+
+        totalAmount += pricePerNight * nights * rooms;
+        totalNights += nights;
+
+        // الانتقال لليوم التالي بعد نهاية الفترة الحالية
+        current = periodEnd;
     }
 
-    const nights = calcNights(i);
-    document.getElementById(`nights${i}`).value = `${nights} ليلة × ${rooms} غرفة`;
-
-    let pricePerNight = 0;
-    switch(type){
-        case 'مفردة': pricePerNight = hotel.single; break;
-        case 'مزدوجة': pricePerNight = hotel.double; break;
-        case 'ثلاثية': pricePerNight = hotel.triple; break;
-        case 'رباعية': pricePerNight = hotel.quadruple; break;
-        case 'خماسية': pricePerNight = hotel.quintuple; break;
-    }
-
-    document.getElementById(`amount${i}`).value = (pricePerNight * nights * rooms).toFixed(2);
+    document.getElementById(`nights${i}`).value = `${totalNights} ليلة × ${rooms} غرفة`;
+    document.getElementById(`amount${i}`).value = totalAmount.toFixed(2);
 
     calcTotal();
 }
-
-
 
 // ربط الأحداث
 function attachPriceCalc(i){
