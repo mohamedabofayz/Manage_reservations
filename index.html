@@ -8,7 +8,7 @@
 body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; }
 .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
 h2 { text-align: center; margin-bottom: 20px; }
-.row { display: flex; gap: 10px; margin-bottom: 12px; }
+.row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
 .group-title { font-weight: bold; margin-top: 25px; background: #eee; padding: 8px; border-radius: 6px; }
 button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; }
@@ -40,6 +40,11 @@ img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
 
 <div class="row">
     <input type="email" name="clientEmail" placeholder="البريد الالكتروني">
+</div>
+
+<!-- 🔍 خانة البحث عن الفندق -->
+<div class="row">
+    <input type="text" id="hotelSearch" placeholder="ابحث عن الفندق…" style="padding:10px;border:1px solid #ccc;border-radius:8px;">
 </div>
 
 <div class="row">
@@ -91,13 +96,32 @@ const HOTELS_API = "https://script.google.com/macros/s/AKfycby1b2X0ST9ehMp0BQtOy
 async function loadHotels() {
     const res = await fetch(HOTELS_API);
     hotelData = await res.json();
+
+    window.originalHotelList = [...hotelData];
+
     const hotelSelect = document.getElementById("hotelSelect");
     hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
+
     hotelData.forEach(h => {
         hotelSelect.innerHTML += `<option value="${h.name}">${h.name} — ${h.fromDate} إلى ${h.toDate}</option>`;
     });
 }
 loadHotels();
+
+// 🔍 البحث داخل الفنادق
+document.getElementById("hotelSearch").addEventListener("input", function () {
+    const search = this.value.trim();
+    const hotelSelect = document.getElementById("hotelSelect");
+
+    const filtered = window.originalHotelList.filter(h =>
+        h.name.includes(search)
+    );
+
+    hotelSelect.innerHTML = "<option value=''>— اختر الفندق —</option>";
+    filtered.forEach(h => {
+        hotelSelect.innerHTML += `<option value="${h.name}">${h.name} — ${h.fromDate} إلى ${h.toDate}</option>`;
+    });
+});
 
 // عند اختيار فندق
 document.getElementById("hotelSelect").addEventListener("change", (e) => {
@@ -174,7 +198,6 @@ function calcPrice(i) {
 
     const hotel = hotelData.find(h => h.name === hotelName);
 
-    // التحقق من الفترة
     if (checkin < hotel.fromDate || checkout > hotel.toDate) {
         document.getElementById(`amount${i}`).value = "";
         document.getElementById(`nights${i}`).value = "0";
