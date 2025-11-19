@@ -190,15 +190,14 @@ function calcPrice(i) {
 
     if (!hotelName || !type || !checkin || !checkout) return;
 
-    // ✅ اختيار الفترة الصحيحة لهذا الفندق
-    const hotel = hotelData.find(h =>
-        h.name === hotelName &&
-        checkin >= h.fromDate &&
-        checkout <= h.toDate
-    );
+    // جلب كل الفترات للفندق المختار
+    const matchingHotels = hotelData.filter(h => h.name === hotelName);
 
-    // ❌ لا توجد فترة تطابق التواريخ
+    // البحث عن فترة مناسبة
+    const hotel = matchingHotels.find(h => checkin >= h.fromDate && checkout <= h.toDate);
+
     if (!hotel) {
+        // لا توجد فترة مناسبة
         document.getElementById(`amount${i}`).value = "";
         document.getElementById(`nights${i}`).value = "0";
         calcTotal();
@@ -221,6 +220,7 @@ function calcPrice(i) {
 
     calcTotal();
 }
+
 
 
 // ربط الأحداث
