@@ -159,22 +159,50 @@ function calcTotal() {
     document.getElementById("totalField").value = sum.toFixed(2);
 }
 
-// 6. إرسال النموذج (يمكنك تعديل الرابط لاحقاً)
+// ==========================================
+//  ضع رابط تطبيق الويب الخاص بك هنا
+// ==========================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/XXXXXXXXX/exec"; 
+// ^^^ امسح الرابط القديم وضع رابطك الجديد هنا بين علامتي التنصيص
+
+
+// كود إرسال البيانات
 document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    // جمع البيانات ككائن JSON
+    // تغيير نص الزر ليظهر للمستخدم أن العملية جارية
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "جاري الإرسال...";
+    submitBtn.disabled = true;
+
+    // تجميع البيانات
     const data = Object.fromEntries(new FormData(e.target).entries());
-    
-    console.log("البيانات المرسلة:", data);
-    alert("تم تجهيز البيانات للإرسال! (يمكنك ربطها بأي خادم الآن)");
-    
-    // إعادة تعيين النموذج
-    // e.target.reset(); 
-    // guestCount = 0;
-    // document.getElementById("guestContainer").innerHTML = "";
-    // document.getElementById("totalField").value = "";
-    // addGuest();
+
+    try {
+        // عملية الإرسال
+        await fetch(GOOGLE_SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify(data) 
+        });
+        
+        alert("تم إرسال الطلب بنجاح 🎉");
+        
+        // تفريغ النموذج بعد النجاح
+        e.target.reset();
+        document.getElementById("guestContainer").innerHTML = "";
+        document.getElementById("totalField").value = "";
+        guestCount = 0;
+        addGuest(); // إعادة إضافة حقل للضيف الأول
+
+    } catch (error) {
+        console.error(error);
+        alert("حدث خطأ أثناء الإرسال، تأكد من الاتصال بالإنترنت.");
+    } finally {
+        // إعادة الزر لوضعه الطبيعي
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+    }
 });
 
 // إضافة الضيف الأول تلقائياً عند التحميل
