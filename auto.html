@@ -1,145 +1,151 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8" />
-<title>نموذج طلب حجز (يدوي)</title>
-
-<style>
-body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; }
-.container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
-h2 { text-align: center; margin-bottom: 20px; }
-.row { display: flex; gap: 10px; margin-bottom: 12px; }
-.row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-.group-title { font-weight: bold; margin-top: 25px; background: #eee; padding: 8px; border-radius: 6px; }
-button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; }
-button:hover { background: #005fcc; }
-#addGuestBtn { background: #28a745; }
-#totalField { background-color: #e9ecef; font-weight: bold; }
-</style>
-</head>
-
-<body>
-<div class="container">
-<h2>نموذج طلب حجز (يدوي)</h2>
-
-<form id="bookingForm">
-
-<div class="row">
-  <input id="invoiceNumber" name="invoice" placeholder="رقم الفاتورة">
-  <input name="clientName" placeholder="اسم العميل">
-</div>
-
-<div class="row">
-  <input name="clientPhone" placeholder="رقم الجوال">
-  <input name="address" placeholder="العنوان">
-</div>
-
-<div class="row">
-  <input name="clientEmail" placeholder="البريد الإلكتروني">
-</div>
-
-<hr>
-
-<div class="row">
-  <input name="hotelName" placeholder="اسم الفندق">
-</div>
-
-<div class="row">
-  <input name="hotelPhone" placeholder="جوال الفندق">
-  <input name="hotelEmail" placeholder="بريد الفندق">
-</div>
-
-<div class="row">
-  <input id="todayField" name="todayDate">
-  <input name="reservationNumber" placeholder="رقم الحجز">
-</div>
-
-<div id="guestContainer"></div>
-
-<button type="button" id="addGuestBtn">+ إضافة ضيف</button>
-
-<div class="row">
-  <input id="totalField" name="total" readonly placeholder="الإجمالي">
-</div>
-
-<button type="submit">إرسال</button>
-</form>
-</div>
-
 <script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-7slEGPs_YuBUAgX_Mi-1XlCGninicp2_hSBXQC-zg32qgypq7gsrIZkVFzr5X0-a/exec";
+// 1. توليد رقم الفاتورة تلقائي
+function generateInvoiceNumber() {
+    const now = new Date();
+    return `IR-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
+}
+document.getElementById("invoiceNumber").value = generateInvoiceNumber();
 
-document.getElementById("invoiceNumber").value =
-  "IR-" + Date.now();
+// 2. تعيين تاريخ اليوم
+document.getElementById("todayField").value = new Date().toISOString().slice(0,10).split("-").reverse().join("-");
 
-document.getElementById("todayField").value =
-  new Date().toISOString().slice(0,10);
-
+// متغير لعد الضيوف
 let guestCount = 0;
 
-function addGuest(){
-  guestCount++;
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <div class="group-title">الضيف ${guestCount}</div>
+// 3. دالة إضافة ضيف جديد
+function addGuest() {
+    guestCount++;
 
-    <div class="row">
-      <input name="name${guestCount}" placeholder="اسم الضيف">
-      <input type="date" name="checkin${guestCount}">
-    </div>
+    const box = document.createElement("div");
+    box.classList.add("guest-box"); 
+    // إضافة كلاس لتمييز حاوية الضيف لاستخراج البيانات لاحقاً إذا لزم الأمر
+    box.setAttribute("data-id", guestCount); 
+    
+    box.innerHTML = `
+        <div class="group-title">بيانات الضيف ${guestCount}</div>
 
-    <div class="row">
-      <input type="date" name="checkout${guestCount}">
-      <input name="nights${guestCount}" placeholder="عدد الليالي">
-    </div>
+        <div class="row">
+            <input name="name${guestCount}" placeholder="اسم الضيف">
+            <input type="date" id="arrive${guestCount}" name="checkin${guestCount}" onchange="calcNights(${guestCount})">
+        </div>
 
-    <div class="row">
-      <select name="type${guestCount}">
-        <option value="">نوع الغرفة</option>
-        <option value="مفردة">مفردة</option>
-        <option value="مزدوجة">مزدوجة</option>
-        <option value="ثلاثية">ثلاثية</option>
-      </select>
-      <input name="rooms${guestCount}" type="number" value="1">
-    </div>
+        <div class="row">
+            <input type="date" id="leave${guestCount}" name="checkout${guestCount}" onchange="calcNights(${guestCount})">
+            <input id="nights${guestCount}" name="nights${guestCount}" placeholder="عدد الليالي" readonly>
+        </div>
 
-    <div class="row">
-      <input class="amount-field" name="amount${guestCount}" type="number" step="0.01" placeholder="السعر" oninput="calcTotal()">
-    </div>
-  `;
-  document.getElementById("guestContainer").appendChild(div);
+        <div class="row">
+            <select name="type${guestCount}" id="type${guestCount}">
+                <option value="">— نوع الغرفة —</option>
+                <option value="مفردة">مفردة</option>
+                <option value="مزدوجة">مزدوجة</option>
+                <option value="ثلاثية">ثلاثية</option>
+                <option value="رباعية">رباعية</option>
+                <option value="خماسية">خماسية</option>
+            </select>
+
+            <input type="number" min="1" value="1" name="rooms${guestCount}" id="rooms${guestCount}" placeholder="عدد الغرف">
+        </div>
+
+        <div class="row">
+            <input type="number" step="0.01" class="amount-field" id="amount${guestCount}" name="amount${guestCount}" placeholder="أدخل السعر (المبلغ) يدوياً" oninput="calcTotal()">
+        </div>
+    `;
+    document.getElementById("guestContainer").appendChild(box);
 }
 
-function calcTotal(){
-  let sum = 0;
-  document.querySelectorAll(".amount-field").forEach(i=>{
-    if(i.value) sum += parseFloat(i.value);
-  });
-  document.getElementById("totalField").value = sum.toFixed(2);
+document.getElementById("addGuestBtn").addEventListener("click", addGuest);
+
+// 4. دالة مساعدة لحساب عدد الليالي
+function calcNights(i) {
+    const a = document.getElementById(`arrive${i}`).value;
+    const l = document.getElementById(`leave${i}`).value;
+    const nightsField = document.getElementById(`nights${i}`);
+
+    if (a && l) {
+        const diff = (new Date(l) - new Date(a)) / (1000 * 60 * 60 * 24);
+        if (diff > 0) {
+            nightsField.value = diff + " ليلة";
+        } else {
+            nightsField.value = "تاريخ غير صحيح";
+        }
+    }
 }
 
-document.getElementById("addGuestBtn").onclick = addGuest;
+// 5. دالة حساب الإجمالي الكلي
+function calcTotal() {
+    let sum = 0;
+    const amounts = document.querySelectorAll(".amount-field");
+    amounts.forEach(input => {
+        const val = parseFloat(input.value);
+        if (!isNaN(val)) {
+            sum += val;
+        }
+    });
+    document.getElementById("totalField").value = sum.toFixed(2);
+}
+
+// ==========================================
+//  رابط تطبيق الويب الخاص بك
+// ==========================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-7slEGPs_YuBUAgX_Mi-1XlCGninicp2_hSBXQC-zg32qgypq7gsrIZkVFzr5X0-a/exec"; 
+
+
+// كود إرسال البيانات المعدّل
+document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "جاري الإرسال...";
+    submitBtn.disabled = true;
+
+    // تحويل بيانات الفورم إلى كائن (Object)
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // --- التعديل هنا: دمج نوع الغرفة مع عدد الغرف ---
+    // نقوم بالمرور على عدد الضيوف الحاليين وتعديل قيمة الحقل قبل الإرسال
+    for (let i = 1; i <= guestCount; i++) {
+        // مفاتيح الحقول في الفورم
+        const typeKey = `type${i}`;
+        const roomsKey = `rooms${i}`;
+
+        // إذا كان الحقلان موجودين ولهم قيم
+        if (data[typeKey] && data[roomsKey]) {
+            // نعدل قيمة النوع لتصبح: "نوع × عدد"
+            // مثال: "مزدوجة × 2 غرف"
+            data[typeKey] = `${data[typeKey]} × ${data[roomsKey]} غرف`;
+        }
+    }
+    // ---------------------------------------------
+
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify(data) 
+        });
+        
+        alert("تم إرسال الطلب بنجاح 🎉");
+        
+        // تفريغ النموذج
+        e.target.reset();
+        document.getElementById("guestContainer").innerHTML = "";
+        document.getElementById("totalField").value = "";
+        guestCount = 0;
+        addGuest(); 
+        document.getElementById("invoiceNumber").value = generateInvoiceNumber(); // توليد رقم جديد
+
+    } catch (error) {
+        console.error(error);
+        alert("حدث خطأ أثناء الإرسال، تأكد من الاتصال بالإنترنت.");
+    } finally {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+    }
+});
+
+// إضافة الضيف الأول تلقائياً عند التحميل
 addGuest();
 
-document.getElementById("bookingForm").onsubmit = async e=>{
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd.entries());
-
-  for(let i=1;i<=guestCount;i++){
-    if(data[`type${i}`] && data[`rooms${i}`]){
-      data[`type${i}`] = `${data[`type${i}`]} × ${data[`rooms${i}`]} غرفة`;
-    }
-  }
-
-  await fetch(GOOGLE_SCRIPT_URL,{
-    method:"POST",
-    body: JSON.stringify(data)
-  });
-
-  alert("تم الإرسال بنجاح");
-  e.target.reset();
-};
 </script>
-</body>
-</html>
