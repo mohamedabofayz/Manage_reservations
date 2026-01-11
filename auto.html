@@ -1,104 +1,56 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>نموذج طلب حجز (يدوي)</title>
 
 <style>
-body {
-  font-family: "Tajawal", sans-serif;
-  background: #f7f7f7;
-  padding: 20px;
-}
-.container {
-  max-width: 900px;
-  margin: auto;
-  background: #fff;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 3px 10px rgba(0,0,0,.1);
-}
-h2 { text-align: center; }
+body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+h2 { text-align: center; margin-bottom: 20px; }
 .row { display: flex; gap: 10px; margin-bottom: 12px; }
-.row input, .row select {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-.group-title {
-  font-weight: bold;
-  margin-top: 20px;
-  background: #eee;
-  padding: 8px;
-  border-radius: 6px;
-}
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 8px;
-  background: #007bff;
-  color: white;
-  font-size: 17px;
-  cursor: pointer;
-}
+.row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+.group-title { font-weight: bold; margin-top: 25px; background: #eee; padding: 8px; border-radius: 6px; }
+button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; }
 button:hover { background: #005fcc; }
-#addGuestBtn { background: #28a745; margin-bottom: 10px; }
-#totalField {
-  background: #e9ecef;
-  font-weight: bold;
-}
-.result {
-  margin-top: 25px;
-  padding: 15px;
-  background: #e8f5e9;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 16px;
-}
-.result a {
-  font-size: 18px;
-  font-weight: bold;
-}
+#addGuestBtn { background: #28a745; }
+#totalField { background-color: #e9ecef; font-weight: bold; }
 </style>
 </head>
 
 <body>
-
 <div class="container">
-
 <h2>نموذج طلب حجز (يدوي)</h2>
 
 <form id="bookingForm">
 
 <div class="row">
-  <input name="invoice" id="invoiceNumber" placeholder="رقم الفاتورة" required>
-  <input name="clientName" placeholder="اسم العميل" required>
+  <input id="invoiceNumber" name="invoice" placeholder="رقم الفاتورة">
+  <input name="clientName" placeholder="اسم العميل">
 </div>
 
 <div class="row">
-  <input name="clientPhone" placeholder="رقم الجوال" required>
+  <input name="clientPhone" placeholder="رقم الجوال">
   <input name="address" placeholder="العنوان">
 </div>
 
 <div class="row">
-  <input name="clientEmail" type="email" placeholder="البريد الإلكتروني">
+  <input name="clientEmail" placeholder="البريد الإلكتروني">
 </div>
 
 <hr>
 
 <div class="row">
-  <input name="hotelName" placeholder="اسم الفندق" required>
+  <input name="hotelName" placeholder="اسم الفندق">
 </div>
 
 <div class="row">
   <input name="hotelPhone" placeholder="جوال الفندق">
-  <input name="hotelEmail" type="email" placeholder="بريد الفندق">
+  <input name="hotelEmail" placeholder="بريد الفندق">
 </div>
 
 <div class="row">
-  <input name="todayDate" id="todayField" placeholder="تاريخ اليوم">
+  <input id="todayField" name="todayDate">
   <input name="reservationNumber" placeholder="رقم الحجز">
 </div>
 
@@ -107,44 +59,29 @@ button:hover { background: #005fcc; }
 <button type="button" id="addGuestBtn">+ إضافة ضيف</button>
 
 <div class="row">
-  <input id="totalField" name="total" placeholder="الإجمالي" readonly>
+  <input id="totalField" name="total" readonly placeholder="الإجمالي">
 </div>
 
-<button type="submit">إرسال الطلب</button>
-
+<button type="submit">إرسال</button>
 </form>
-
-<div id="resultBox"></div>
-
 </div>
 
 <script>
-// ==========================
-// إعدادات
-// ==========================
-const GOOGLE_SCRIPT_URL =
-"https://script.google.com/macros/s/AKfycbz-7slEGPs_YuBUAgX_Mi-1XlCGninicp2_hSBXQC-zg32qgypq7gsrIZkVFzr5X0-a/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-7slEGPs_YuBUAgX_Mi-1XlCGninicp2_hSBXQC-zg32qgypq7gsrIZkVFzr5X0-a/exec";
 
-// ==========================
-// توليد رقم فاتورة
-// ==========================
-function generateInvoice() {
-  const d = new Date();
-  return `IR-${d.getFullYear()}${d.getMonth()+1}${d.getDate()}-${Math.floor(1000+Math.random()*9000)}`;
-}
-invoiceNumber.value = generateInvoice();
-todayField.value = new Date().toISOString().slice(0,10);
+document.getElementById("invoiceNumber").value =
+  "IR-" + Date.now();
 
-// ==========================
-// الضيوف
-// ==========================
+document.getElementById("todayField").value =
+  new Date().toISOString().slice(0,10);
+
 let guestCount = 0;
 
-function addGuest() {
+function addGuest(){
   guestCount++;
   const div = document.createElement("div");
   div.innerHTML = `
-    <div class="group-title">بيانات الضيف ${guestCount}</div>
+    <div class="group-title">الضيف ${guestCount}</div>
 
     <div class="row">
       <input name="name${guestCount}" placeholder="اسم الضيف">
@@ -158,87 +95,51 @@ function addGuest() {
 
     <div class="row">
       <select name="type${guestCount}">
-        <option value="">— نوع الغرفة —</option>
-        <option>مفردة</option>
-        <option>مزدوجة</option>
-        <option>ثلاثية</option>
+        <option value="">نوع الغرفة</option>
+        <option value="مفردة">مفردة</option>
+        <option value="مزدوجة">مزدوجة</option>
+        <option value="ثلاثية">ثلاثية</option>
       </select>
-      <input type="number" name="rooms${guestCount}" value="1" min="1">
+      <input name="rooms${guestCount}" type="number" value="1">
     </div>
 
     <div class="row">
-      <input type="number" step="0.01" class="amount" name="amount${guestCount}" placeholder="المبلغ">
+      <input class="amount-field" name="amount${guestCount}" type="number" step="0.01" placeholder="السعر" oninput="calcTotal()">
     </div>
   `;
-  guestContainer.appendChild(div);
+  document.getElementById("guestContainer").appendChild(div);
 }
 
-addGuestBtn.onclick = addGuest;
+function calcTotal(){
+  let sum = 0;
+  document.querySelectorAll(".amount-field").forEach(i=>{
+    if(i.value) sum += parseFloat(i.value);
+  });
+  document.getElementById("totalField").value = sum.toFixed(2);
+}
+
+document.getElementById("addGuestBtn").onclick = addGuest;
 addGuest();
 
-// ==========================
-// حساب الإجمالي
-// ==========================
-document.addEventListener("input", e => {
-  if (!e.target.classList.contains("amount")) return;
-  let sum = 0;
-  document.querySelectorAll(".amount").forEach(i => {
-    const v = parseFloat(i.value);
-    if (!isNaN(v)) sum += v;
-  });
-  totalField.value = sum.toFixed(2);
-});
-
-// ==========================
-// الإرسال
-// ==========================
-bookingForm.addEventListener("submit", async e => {
+document.getElementById("bookingForm").onsubmit = async e=>{
   e.preventDefault();
-  resultBox.innerHTML = "";
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
 
-  const btn = bookingForm.querySelector("button[type=submit]");
-  btn.disabled = true;
-  btn.textContent = "جاري الإرسال...";
-
-  const data = Object.fromEntries(new FormData(bookingForm).entries());
-
-  try {
-    const res = await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    const text = await res.text();
-    const json = JSON.parse(text);
-
-    if (json.status !== "success") {
-      throw new Error(json.message || "فشل غير معروف");
+  for(let i=1;i<=guestCount;i++){
+    if(data[`type${i}`] && data[`rooms${i}`]){
+      data[`type${i}`] = `${data[`type${i}`]} × ${data[`rooms${i}`]} غرفة`;
     }
-
-    resultBox.innerHTML = `
-      <div class="result">
-        ✅ تم إنشاء الفاتورة بنجاح<br>
-        <a href="${json.pdfUrl}" target="_blank">🔗 عرض الفاتورة</a>
-      </div>
-    `;
-
-    bookingForm.reset();
-    guestContainer.innerHTML = "";
-    guestCount = 0;
-    addGuest();
-    invoiceNumber.value = generateInvoice();
-    todayField.value = new Date().toISOString().slice(0,10);
-
-  } catch (err) {
-    alert("خطأ حقيقي:\n" + err.message);
-    console.error(err);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "إرسال الطلب";
   }
-});
-</script>
 
+  await fetch(GOOGLE_SCRIPT_URL,{
+    method:"POST",
+    body: JSON.stringify(data)
+  });
+
+  alert("تم الإرسال بنجاح");
+  e.target.reset();
+};
+</script>
 </body>
 </html>
