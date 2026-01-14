@@ -172,30 +172,38 @@ async function postJson(payload){
 }
 
 /* تسجيل دخول */
-el('loginForm').addEventListener('submit', async function(e){
+document.getElementById("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const btn = e.submitter || el('loginForm').querySelector('button[type="submit"]');
-  const org = btn.innerText; btn.innerText = "جاري المحاولة..."; btn.disabled = true;
-  try{
-    const payload = { action: "login", phone_number: el('phone_number').value, password: el('password').value };
-    const data = await postJson(payload);
-    if(data.status === 'success' && data.user){
-      localStorage.setItem('phone_number', data.user.phone_number || '');
-      currentUser = data.user;
-      el('usernameDisplay').textContent = currentUser.username || currentUser.phone_number || "مستخدم";
-      el('loginFormContainer').style.display = 'none';
-      el('bookingFormContainer').style.display = 'block';
+
+  const msg = document.getElementById("loginStatusMessage");
+
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "login",
+        phone_number: phone_number.value,
+        password: password.value
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      document.getElementById("usernameDisplay").textContent = data.user.username;
+      loginFormContainer.style.display = "none";
+      bookingFormContainer.style.display = "block";
       fetchInvoices();
     } else {
-      el('loginStatusMessage').innerHTML = `<p style="color:red;">خطأ: ${data.message || 'بيانات غير صحيحة'}</p>`;
+      msg.innerHTML = `<p style="color:red">${data.message}</p>`;
     }
-  } catch(err){
-    console.error('Login Error:', err);
-    el('loginStatusMessage').innerHTML = `<p style="color:red;">خطأ في الاتصال: ${err.message}</p>`;
-  } finally {
-    btn.innerText = org; btn.disabled = false;
+  } catch {
+    msg.innerHTML = `<p style="color:red">Failed to fetch</p>`;
   }
 });
+
 
 /* إرسال حجز -- توحيد (تأكدنا أنه يوجد handler واحد فقط) */
 el('bookingForm').addEventListener('submit', async function(e){
