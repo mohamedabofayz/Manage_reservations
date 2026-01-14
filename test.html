@@ -42,8 +42,35 @@ img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
 </head>
 <body>
 
-<div class="container">
+<!-- Login Form Container -->
+<div id="loginFormContainer" class="container">
     <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo">
+    <h2>تسجيل دخول النظام</h2>
+    
+    <form id="loginForm">
+        <div class="row">
+            <input type="tel" id="phone_number" name="phone_number" placeholder="رقم الجوال" required>
+        </div>
+        <div class="row">
+            <input type="password" id="password" name="password" placeholder="كلمة المرور" required>
+        </div>
+        
+        <button type="submit">تسجيل الدخول</button>
+    </form>
+    
+    <div id="loginStatusMessage"></div>
+</div>
+
+<!-- Main Booking Form Container (Initially Hidden) -->
+<div id="bookingFormContainer" style="display: none;" class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo">
+        <div>
+            <span id="usernameDisplay" style="font-weight: bold;"></span>
+            <button type="button" onclick="logout()" style="background: #dc3545; margin-right: 10px; padding: 8px 15px; border-radius: 5px; color: white; border: none; cursor: pointer;">تسجيل خروج</button>
+        </div>
+    </div>
+    
     <h2>نموذج طلب حجز (يدوي)</h2>
 
     <form id="bookingForm">
@@ -94,7 +121,6 @@ img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
             <p class="empty-msg">جاري تحميل الفواتير...</p>
         </div>
     </div>
-
 </div>
 
 <script>
