@@ -1,448 +1,275 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام توليد الفواتير</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .login-container {
-            text-align: center;
-            padding: 40px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-            text-align: right;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="password"], input[type="email"], input[type="date"], input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .hidden {
-            display: none;
-        }
-        .invoice-item {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-        .error-message {
-            color: red;
-            margin-top: 10px;
-        }
-        .success-message {
-            color: green;
-            margin-top: 10px;
-        }
-        .logout-btn {
-            float: left;
-            background-color: #dc3545;
-        }
-        .logout-btn:hover {
-            background-color: #c82333;
-        }
-        .user-info {
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-        }
-    </style>
+<meta charset="utf-8"/>
+<title>نموذج طلب حجز (يدوي)</title>
+<style>
+/* احتفظت بتنسيقك، مع تبسيط */
+body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; color: #333; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+.row { display:flex; gap:10px; margin-bottom:12px; }
+.row input, .row select { flex:1; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:inherit; }
+.group-title { font-weight:bold; margin-top:25px; background:#f1f3f5; padding:10px; border-radius:6px; border-right:4px solid #007bff; }
+button { width:100%; padding:14px; border:none; border-radius:8px; background:#007bff; color:white; font-size:17px; cursor:pointer; margin-top:20px; transition:.3s; }
+button:disabled { background:#ccc; cursor:not-allowed; }
+#addGuestBtn { background:#28a745; width:auto; padding:10px 30px; margin:10px auto 0; display:block; }
+.invoices-section { margin-top:40px; border-top:2px dashed #ddd; padding-top:20px; }
+.invoice-card { background:#fdfdfd; border:1px solid #e0e0e0; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+.invoice-link { text-decoration:none; background:#dc3545; color:white; padding:8px 15px; border-radius:5px; font-size:14px; }
+.empty-msg { text-align:center; color:#777; padding:20px; font-style:italic; }
+@media (max-width:600px){ .row{flex-direction:column;} }
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- شاشة تسجيل الدخول -->
-        <div id="loginSection" class="login-container">
-            <h2>تسجيل دخول المستخدم</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="phone_number">رقم الجوال:</label>
-                    <input type="text" id="phone_number" name="phone_number" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label for="password">كلمة المرور:</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password">
-                </div>
-                <button type="submit">تسجيل الدخول</button>
-            </form>
-            <div id="loginError" class="error-message hidden"></div>
-        </div>
+<div id="loginFormContainer" class="container">
+  <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo" style="width:180px;display:block;margin:10px auto 20px;">
+  <h2 style="text-align:center;">تسجيل دخول النظام</h2>
+  <form id="loginForm">
+    <div class="row"><input type="tel" id="phone_number" name="phone_number" placeholder="رقم الجوال" required></div>
+    <div class="row"><input type="password" id="password" name="password" placeholder="كلمة المرور" required></div>
+    <button type="submit">تسجيل الدخول</button>
+  </form>
+  <div id="loginStatusMessage"></div>
+</div>
 
-        <!-- شاشة إنشاء الفاتورة -->
-        <div id="invoiceSection" class="hidden">
-            <div class="user-info">
-                <strong>مرحبًا، <span id="displayUsername"></span></strong>
-                <button class="logout-btn" id="logoutBtn">تسجيل خروج</button>
-            </div>
-            
-            <h2>إنشاء فاتورة جديدة</h2>
-            <form id="invoiceForm">
-                <div class="form-group">
-                    <label for="client_name">اسم العميل:</label>
-                    <input type="text" id="client_name" name="client_name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="hotel_name">اسم الفندق:</label>
-                    <input type="text" id="hotel_name" name="hotel_name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="invoice_date">تاريخ الفاتورة:</label>
-                    <input type="date" id="invoice_date" name="invoice_date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="booking_reference">رقم الحجز:</label>
-                    <input type="text" id="booking_reference" name="booking_reference" required>
-                </div>
-                
-                <div id="guestsContainer">
-                    <h3>قائمة الضيوف</h3>
-                    <div class="guest-item">
-                        <div class="form-group">
-                            <label>اسم الضيف:</label>
-                            <input type="text" name="guest_names[]" required>
-                        </div>
-                        <div class="form-group">
-                            <label>عدد الليالي:</label>
-                            <input type="number" name="nights[]" min="1" value="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label>السعر الليلي:</label>
-                            <input type="number" name="nightly_rates[]" min="0" step="0.01" value="0" required>
-                        </div>
-                    </div>
-                </div>
-                
-                <button type="button" id="addGuestBtn">إضافة ضيف آخر</button>
-                
-                <div class="form-group">
-                    <label for="total_amount">المبلغ الإجمالي:</label>
-                    <input type="number" id="total_amount" name="total_amount" readonly style="background-color: #f0f0f0;">
-                </div>
-                
-                <button type="submit">إنشاء فاتورة</button>
-            </form>
-            
-            <div id="invoiceResult" class="success-message hidden"></div>
-            <div id="invoiceError" class="error-message hidden"></div>
-            
-            <h2>الفواتير المُنشأة</h2>
-            <div id="invoicesList"></div>
-        </div>
+<div id="bookingFormContainer" style="display:none;" class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo" style="width:140px;">
+    <div>
+      <span id="usernameDisplay" style="font-weight:bold;"></span>
+      <button type="button" onclick="logout()" style="background:#dc3545;margin-right:10px;padding:8px 15px;border-radius:5px;color:white;border:none;cursor:pointer;">تسجيل خروج</button>
     </div>
+  </div>
 
-    <script>
-        // استبدل هذا الرابط برابط السكربت الخاص بك
-        const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwOR_o-qSTjF8fCFePNdwEd5eXWuDfLT2i-kICmItH3kgycXJHkOk9eXXlSR4kjOOPP/exec';
+  <h2>نموذج طلب حجز (يدوي)</h2>
+  <form id="bookingForm">
+    <div class="row">
+      <input type="text" id="invoiceNumber" name="invoice" placeholder="رقم الفاتورة" required>
+      <input type="text" name="clientName" placeholder="إسم العميل" required>
+    </div>
+    <div class="row">
+      <input type="text" name="clientPhone" placeholder="رقم الجوال" required>
+      <input type="text" name="address" placeholder="العنوان">
+    </div>
+    <div class="row"><input type="email" name="clientEmail" placeholder="البريد الالكتروني"></div>
+    <hr style="margin:20px 0;border:0;border-top:1px solid #eee;">
+    <div class="row"><input type="text" name="hotelName" id="hotelName" placeholder="اسم الفندق" required></div>
+    <div id="guestContainer"></div>
+    <button id="addGuestBtn" type="button">+ إضافة ضيف</button>
+    <div class="row" style="margin-top:20px;">
+      <label style="padding:10px;align-self:center;font-weight:bold;">الإجمالي الكلي:</label>
+      <input type="text" id="totalField" name="total" placeholder="0.00" readonly style="background:#e9ecef;font-weight:bold;">
+    </div>
+    <button type="submit" id="submitBtn">إرسال الطلب وإنشاء الفاتورة</button>
+  </form>
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSession();
-        });
+  <div class="invoices-section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+      <h3>📂 فواتير اليوم</h3>
+      <button class="refresh-btn" onclick="fetchInvoices()" style="background:#6c757d;padding:8px 15px;color:white;border:none;border-radius:6px;cursor:pointer;">🔄 تحديث</button>
+    </div>
+    <div id="invoicesList"><p class="empty-msg">جاري تحميل الفواتير...</p></div>
+  </div>
+</div>
 
-        async function loadSession() {
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'checkSession'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success && data.user) {
-                    // المستخدم مسجل دخول
-                    showInvoiceSection(data.user);
-                    loadInvoices();
-                } else {
-                    // لا جلسة مفتوحة، اعرض شاشة تسجيل الدخول
-                    showLoginSection();
-                }
-            } catch (error) {
-                console.error('Session check error:', error);
-                showLoginSection();
-            }
-        }
+<script>
+/* ======== اضبط هنا رابط Web App المنشور ======== */
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOR_o-qSTjF8fCFePNdwEd5eXWuDfLT2i-kICmItH3kgycXJHkOk9eXXlSR4kjOOPP/exec";
+/* =============================================== */
 
-        function showLoginSection() {
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('invoiceSection').classList.add('hidden');
-        }
+/* أدوات مساعدة */
+function el(id){ return document.getElementById(id); }
+function generateInvoiceNumber(){
+  const now = new Date();
+  return `IR-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${Math.floor(1000+Math.random()*9000)}`;
+}
+el('invoiceNumber').value = generateInvoiceNumber();
+el('totalField').value = "0.00";
 
-        function showInvoiceSection(user) {
-            document.getElementById('displayUsername').textContent = user.username;
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('invoiceSection').classList.remove('hidden');
-        }
+/* ضيوف */
+let guestCount = 0;
+function addGuest(){
+  guestCount++;
+  const container = el('guestContainer');
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div class="group-title">بيانات الضيف ${guestCount}</div>
+    <div class="row">
+      <input name="name${guestCount}" placeholder="اسم الضيف">
+      <input type="date" id="arrive${guestCount}" name="checkin${guestCount}" onchange="calcNights(${guestCount})">
+    </div>
+    <div class="row">
+      <input type="date" id="leave${guestCount}" name="checkout${guestCount}" onchange="calcNights(${guestCount})">
+      <input id="nights${guestCount}" name="nights${guestCount}" placeholder="عدد الليالي" readonly>
+    </div>
+    <div class="row">
+      <select name="type${guestCount}" id="type${guestCount}">
+        <option value="">— نوع الغرفة —</option>
+        <option value="مفردة">مفردة</option>
+        <option value="مزدوجة">مزدوجة</option>
+        <option value="ثلاثية">ثلاثية</option>
+      </select>
+      <input type="number" min="1" value="1" name="rooms${guestCount}" id="rooms${guestCount}" placeholder="عدد الغرف">
+    </div>
+    <div class="row">
+      <input type="number" step="0.01" class="amount-field" name="amount${guestCount}" placeholder="السعر" oninput="calcTotal()">
+    </div>
+  `;
+  container.appendChild(div);
+}
+el('addGuestBtn').addEventListener('click', addGuest);
+addGuest();
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const phone_number = document.getElementById('phone_number').value;
-            const password = document.getElementById('password').value;
-            
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'login',
-                        phone_number: phone_number,
-                        password: password
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showInvoiceSection(data.user);
-                    loadInvoices();
-                    document.getElementById('loginError').classList.add('hidden');
-                } else {
-                    document.getElementById('loginError').textContent = data.message || 'رقم الجوال أو كلمة المرور غير صحيحة';
-                    document.getElementById('loginError').classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Login Error:', error);
-                document.getElementById('loginError').textContent = 'خطأ في الاتصال: ' + error.message;
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        });
+/* حسابات */
+function calcNights(i){
+  const a = el(`arrive${i}`).value, l = el(`leave${i}`).value, f = el(`nights${i}`);
+  if(a && l){
+    const diff = (new Date(l) - new Date(a)) / 86400000;
+    f.value = diff > 0 ? diff + " ليلة" : "خطأ في التاريخ";
+  }
+}
+function calcTotal(){
+  let sum = 0;
+  document.querySelectorAll(".amount-field").forEach(elm => { sum += parseFloat(elm.value) || 0; });
+  el('totalField').value = sum.toFixed(2);
+}
 
-        document.getElementById('logoutBtn').addEventListener('click', async function() {
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'logout'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showLoginSection();
-                    document.getElementById('loginError').classList.add('hidden');
-                }
-            } catch (error) {
-                console.error('Logout Error:', error);
-            }
-        });
+/* fetch مع timeout + فحص واضح للأخطاء */
+async function fetchWithTimeout(url, opts = {}, timeout = 20000){
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  opts.signal = controller.signal;
+  try{
+    const res = await fetch(url, opts);
+    clearTimeout(id);
+    return res;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
 
-        document.getElementById('addGuestBtn').addEventListener('click', function() {
-            const guestsContainer = document.getElementById('guestsContainer');
-            const guestCount = document.querySelectorAll('.guest-item').length + 1;
-            
-            const guestItem = document.createElement('div');
-            guestItem.className = 'guest-item';
-            guestItem.innerHTML = `
-                <h4>الضيف ${guestCount}</h4>
-                <div class="form-group">
-                    <label>اسم الضيف:</label>
-                    <input type="text" name="guest_names[]" required>
-                </div>
-                <div class="form-group">
-                    <label>عدد الليالي:</label>
-                    <input type="number" name="nights[]" min="1" value="1" required>
-                </div>
-                <div class="form-group">
-                    <label>السعر الليلي:</label>
-                    <input type="number" name="nightly_rates[]" min="0" step="0.01" value="0" required>
-                </div>
-                <button type="button" class="remove-guest-btn">إزالة</button>
-            `;
-            
-            guestsContainer.appendChild(guestItem);
-            
-            // إضافة وظيفة إزالة الضيف
-            guestItem.querySelector('.remove-guest-btn').addEventListener('click', function() {
-                if (document.querySelectorAll('.guest-item').length > 1) {
-                    guestItem.remove();
-                    calculateTotal();
-                }
-            });
-            
-            // إضافة وظائف حساب المجموع
-            const nightInput = guestItem.querySelector('input[name="nights[]"]');
-            const rateInput = guestItem.querySelector('input[name="nightly_rates[]"]');
-            
-            nightInput.addEventListener('input', calculateTotal);
-            rateInput.addEventListener('input', calculateTotal);
-        });
+/* دوال API عامة */
+async function postJson(payload){
+  if(!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_YOUR")) throw new Error("لم تقم بتحديد GOOGLE_SCRIPT_URL في الكود.");
+  const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    mode: "cors"
+  }, 20000);
+  if(!res.ok) {
+    const txt = await res.text().catch(()=>"<non-text>");
+    throw new Error(`Server returned ${res.status}: ${txt}`);
+  }
+  // محاولة قراءة JSON مع تحققات
+  const ct = res.headers.get('content-type') || '';
+  if(!ct.includes('application/json')) {
+    const text = await res.text().catch(()=>"");
+    throw new Error("الرد ليس JSON: " + text);
+  }
+  return res.json();
+}
 
-        // إضافة وظائف حساب المجموع عند تحميل الصفحة
-        document.querySelectorAll('input[name="nights[]"]').forEach(input => {
-            input.addEventListener('input', calculateTotal);
-        });
-        
-        document.querySelectorAll('input[name="nightly_rates[]"]').forEach(input => {
-            input.addEventListener('input', calculateTotal);
-        });
+/* تسجيل دخول */
+el('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = e.submitter || el('loginForm').querySelector('button[type="submit"]');
+  const org = btn.innerText; btn.innerText = "جاري المحاولة..."; btn.disabled = true;
+  try{
+    const payload = { action: "login", phone_number: el('phone_number').value, password: el('password').value };
+    const data = await postJson(payload);
+    if(data.status === 'success' && data.user){
+      localStorage.setItem('phone_number', data.user.phone_number || '');
+      currentUser = data.user;
+      el('usernameDisplay').textContent = currentUser.username || currentUser.phone_number || "مستخدم";
+      el('loginFormContainer').style.display = 'none';
+      el('bookingFormContainer').style.display = 'block';
+      fetchInvoices();
+    } else {
+      el('loginStatusMessage').innerHTML = `<p style="color:red;">خطأ: ${data.message || 'بيانات غير صحيحة'}</p>`;
+    }
+  } catch(err){
+    console.error('Login Error:', err);
+    el('loginStatusMessage').innerHTML = `<p style="color:red;">خطأ في الاتصال: ${err.message}</p>`;
+  } finally {
+    btn.innerText = org; btn.disabled = false;
+  }
+});
 
-        function calculateTotal() {
-            let total = 0;
-            
-            const nightInputs = document.querySelectorAll('input[name="nights[]"]');
-            const rateInputs = document.querySelectorAll('input[name="nightly_rates[]"]');
-            
-            for (let i = 0; i < nightInputs.length; i++) {
-                const nights = parseFloat(nightInputs[i].value) || 0;
-                const rate = parseFloat(rateInputs[i].value) || 0;
-                total += nights * rate;
-            }
-            
-            document.getElementById('total_amount').value = total.toFixed(2);
-        }
+/* إرسال حجز -- توحيد (تأكدنا أنه يوجد handler واحد فقط) */
+el('bookingForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  if(!currentUser){ alert("يجب تسجيل الدخول أولاً"); return; }
+  const btn = el('submitBtn'); const org = btn.innerText; btn.innerText="جاري الحفظ..."; btn.disabled = true;
+  try{
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    // دمج الغرفة × العدد
+    for(let i=1;i<=guestCount;i++){
+      if(data[`type${i}`] && data[`rooms${i}`]) data[`type${i}`] = `${data[`type${i}`]} × ${data[`rooms${i}`]} غرف`;
+    }
+    data.userId = currentUser.id || null;
+    const res = await postJson(data);
+    if(res.status === 'success'){
+      alert("تم بنجاح! 🎉");
+      e.target.reset();
+      el('guestContainer').innerHTML = ''; guestCount=0; addGuest();
+      el('invoiceNumber').value = generateInvoiceNumber();
+      calcTotal();
+      fetchInvoices();
+    } else throw new Error(res.message || 'خطأ من الخادم');
+  } catch(err){
+    console.error(err);
+    alert("فشل الحفظ: " + err.message);
+  } finally {
+    btn.innerText = org; btn.disabled = false;
+  }
+});
 
-        document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            // تحويل FormData إلى كائن عادي
-            const invoiceData = {
-                action: 'createInvoice',
-                client_name: formData.get('client_name'),
-                hotel_name: formData.get('hotel_name'),
-                invoice_date: formData.get('invoice_date'),
-                booking_reference: formData.get('booking_reference'),
-                total_amount: parseFloat(formData.get('total_amount')) || 0,
-                guests: []
-            };
-            
-            // جمع بيانات الضيوف
-            const guestNames = formData.getAll('guest_names[]');
-            const nights = formData.getAll('nights[]');
-            const nightlyRates = formData.getAll('nightly_rates[]');
-            
-            for (let i = 0; i < guestNames.length; i++) {
-                invoiceData.guests.push({
-                    name: guestNames[i],
-                    nights: parseInt(nights[i]) || 0,
-                    nightly_rate: parseFloat(nightlyRates[i]) || 0
-                });
-            }
-            
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(invoiceData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('invoiceResult').textContent = 'تم إنشاء الفاتورة بنجاح!';
-                    document.getElementById('invoiceResult').classList.remove('hidden');
-                    document.getElementById('invoiceError').classList.add('hidden');
-                    
-                    // إعادة تعيين النموذج
-                    this.reset();
-                    document.getElementById('total_amount').value = '';
-                    
-                    // إعادة تحميل قائمة الفواتير
-                    loadInvoices();
-                } else {
-                    document.getElementById('invoiceError').textContent = data.message || 'حدث خطأ أثناء إنشاء الفاتورة';
-                    document.getElementById('invoiceError').classList.remove('hidden');
-                    document.getElementById('invoiceResult').classList.add('hidden');
-                }
-            } catch (error) {
-                console.error('Invoice creation error:', error);
-                document.getElementById('invoiceError').textContent = 'خطأ في الاتصال: ' + error.message;
-                document.getElementById('invoiceError').classList.remove('hidden');
-                document.getElementById('invoiceResult').classList.add('hidden');
-            }
-        });
+/* جلب الفواتير */
+async function fetchInvoices(){
+  const list = el('invoicesList');
+  list.innerHTML = '<p class="empty-msg">جاري التحديث...</p>';
+  try{
+    const payload = { action: 'get_invoices', userId: currentUser?.id || null, role: currentUser?.role || null };
+    const data = await postJson(payload);
+    list.innerHTML = '';
+    const invoices = data.invoices || [];
+    if(invoices.length === 0) { list.innerHTML = '<p class="empty-msg">لا توجد فواتير اليوم.</p>'; return; }
+    invoices.reverse().forEach(inv => {
+      const div = document.createElement('div'); div.className='invoice-card';
+      div.innerHTML = `<div class="invoice-info"><strong>📄 ${inv.name}</strong><span>${inv.date || ''}</span></div><a href="${inv.link||'#'}" target="_blank" class="invoice-link">تحميل PDF</a>`;
+      list.appendChild(div);
+    });
+  } catch(err){
+    console.error('fetchInvoices error:', err);
+    list.innerHTML = `<p class="empty-msg" style="color:red">فشل تحميل القائمة: ${err.message}</p>`;
+  }
+}
 
-        async function loadInvoices() {
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'getInvoices'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const invoicesList = document.getElementById('invoicesList');
-                    invoicesList.innerHTML = '';
-                    
-                    if (data.invoices.length === 0) {
-                        invoicesList.innerHTML = '<p>لا توجد فواتير مُنشأة</p>';
-                        return;
-                    }
-                    
-                    data.invoices.forEach(invoice => {
-                        const invoiceDiv = document.createElement('div');
-                        invoiceDiv.className = 'invoice-item';
-                        invoiceDiv.innerHTML = `
-                            <h4>فاتورة #${invoice.id} - ${invoice.client_name}</h4>
-                            <p><strong>الفندق:</strong> ${invoice.hotel_name}</p>
-                            <p><strong>التاريخ:</strong> ${invoice.invoice_date}</p>
-                            <p><strong>الحجز:</strong> ${invoice.booking_reference}</p>
-                            <p><strong>الإجمالي:</strong> ${invoice.total_amount} ر.س</p>
-                            <p><strong>المستخدم:</strong> ${invoice.created_by}</p>
-                            ${invoice.pdf_link ? `<p><a href="${invoice.pdf_link}" target="_blank">تنزيل PDF</a></p>` : '<p>جاري إنشاء PDF...</p>'}
-                        `;
-                        invoicesList.appendChild(invoiceDiv);
-                    });
-                }
-            } catch (error) {
-                console.error('Load invoices error:', error);
-            }
-        }
-    </script>
+/* جلسة عند التحميل */
+let currentUser = null;
+window.onload = async function(){
+  const phone = localStorage.getItem('phone_number');
+  if(phone){
+    try{
+      const res = await postJson({ action: 'check_session', phone_number: phone });
+      if(res.status === 'success' && res.user){ currentUser = res.user; el('usernameDisplay').textContent = currentUser.username || phone; el('loginFormContainer').style.display='none'; el('bookingFormContainer').style.display='block'; fetchInvoices(); return; }
+    } catch(err){ console.warn('session check failed', err); }
+  }
+  el('loginFormContainer').style.display='block';
+};
+
+/* تسجيل خروج */
+function logout(){
+  localStorage.removeItem('phone_number');
+  currentUser = null;
+  el('loginFormContainer').style.display='block';
+  el('bookingFormContainer').style.display='none';
+  el('loginForm').reset();
+  el('loginStatusMessage').innerHTML = '';
+}
+</script>
 </body>
 </html>
