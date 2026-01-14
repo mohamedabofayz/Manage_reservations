@@ -1,182 +1,235 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>نموذج طلب حجز (يدوي)</title>
-
 <style>
-body { font-family: Tajawal, sans-serif; background:#f7f7f7; padding:20px }
-.container { max-width:900px; margin:auto; background:#fff; padding:25px; border-radius:15px; box-shadow:0 3px 10px rgba(0,0,0,.1) }
-.row { display:flex; gap:10px; margin-bottom:12px }
-.row input, .row select { flex:1; padding:10px; border-radius:8px; border:1px solid #ccc }
-button { width:100%; padding:14px; border:none; border-radius:8px; background:#007bff; color:#fff; font-size:16px; cursor:pointer }
-button:disabled { background:#aaa }
-.logo { width:180px; display:block; margin:10px auto }
-.group-title { font-weight:bold; margin:20px 0 10px; background:#f1f3f5; padding:10px; border-radius:6px; border-right:4px solid #007bff }
-.invoice-card { background:#fff; border:1px solid #ddd; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between }
-.invoice-link { background:#dc3545; color:#fff; padding:8px 15px; border-radius:5px; text-decoration:none }
+body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; color: #333; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+h2 { text-align: center; margin-bottom: 20px; color: #444; }
+.row { display: flex; gap: 10px; margin-bottom: 12px; }
+.row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
+.group-title { font-weight: bold; margin-top: 25px; background: #f1f3f5; padding: 10px; border-radius: 6px; border-right: 4px solid #007bff; }
+button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+button:hover { background: #005fcc; }
+button:disabled { background: #ccc; cursor: not-allowed; }
+img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
+#addGuestBtn { background: #28a745; margin-top: 10px; width: auto; display: block; margin-right: auto; margin-left: auto; padding: 10px 30px; }
+#addGuestBtn:hover { background: #218838; }
+#totalField { background-color: #e9ecef; font-weight: bold; color: #333; font-size: 1.1em; text-align: center; }
+.invoices-section { margin-top: 40px; border-top: 2px dashed #ddd; padding-top: 20px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.refresh-btn { background: #6c757d; width: auto; padding: 8px 15px; margin: 0; font-size: 14px; }
+.refresh-btn:hover { background: #5a6268; }
+.invoice-card { background: #fdfdfd; border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+.invoice-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.invoice-info strong { display: block; margin-bottom: 4px; color: #333; }
+.invoice-info span { font-size: 12px; color: #777; }
+.invoice-link { text-decoration: none; background: #dc3545; color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; }
+.invoice-link:hover { background: #c82333; }
+.empty-msg { text-align: center; color: #777; padding: 20px; font-style: italic; }
+@media (max-width: 600px) { .row { flex-direction: column; } }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
+<!-- Login Form -->
 <div id="loginBox" class="container">
-  <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom">
-  <h3 style="text-align:center">تسجيل الدخول</h3>
-
+  <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo">
+  <h2>تسجيل دخول النظام</h2>
   <form id="loginForm">
     <div class="row">
-      <input id="phone" placeholder="رقم الجوال" required>
+      <input type="tel" id="phone" placeholder="رقم الجوال" required>
     </div>
     <div class="row">
-      <input id="password" type="password" placeholder="كلمة المرور" required>
+      <input type="password" id="password" placeholder="كلمة المرور" required>
     </div>
-    <button>دخول</button>
+    <button type="submit">تسجيل الدخول</button>
   </form>
-
-  <div id="loginMsg"></div>
+  <p id="loginMsg"></p>
 </div>
 
-<!-- APP -->
-<div id="appBox" class="container" style="display:none">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <strong id="userName"></strong>
-    <button onclick="logout()" style="width:auto;background:#dc3545">خروج</button>
+<!-- Booking Form -->
+<div id="appBox" class="container" style="display:none;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo">
+    <div>
+      <span id="userName" style="font-weight:bold;"></span>
+      <button onclick="logout()" style="background:#dc3545;padding:8px 15px;border-radius:5px;color:white;border:none;cursor:pointer;">تسجيل خروج</button>
+    </div>
   </div>
-
-  <h3 style="text-align:center">نموذج الحجز</h3>
-
+  <h2>نموذج طلب حجز (يدوي)</h2>
   <form id="bookingForm">
     <div class="row">
-      <input id="invoice" name="invoice" required>
-      <input name="clientName" placeholder="اسم العميل" required>
+      <input type="text" name="invoice" id="invoiceNumber" placeholder="رقم الفاتورة" required>
+      <input type="text" name="clientName" placeholder="إسم العميل" required>
     </div>
-
-    <div id="guests"></div>
-
-    <button type="button" onclick="addGuest()">+ إضافة ضيف</button>
-
     <div class="row">
-      <input id="total" name="total" readonly placeholder="الإجمالي">
+      <input type="text" name="clientPhone" placeholder="رقم الجوال" required>
+      <input type="text" name="address" placeholder="العنوان">
     </div>
-
-    <button id="sendBtn">إرسال</button>
+    <div class="row">
+      <input type="email" name="clientEmail" placeholder="البريد الالكتروني">
+    </div>
+    <div class="row">
+      <input type="text" name="hotelName" placeholder="اسم الفندق" required>
+      <input type="text" name="hotelPhone" placeholder="جوال الفندق">
+    </div>
+    <div class="row">
+      <input type="email" name="hotelEmail" placeholder="البريد الفندق">
+      <input type="text" name="todayDate" id="todayField" placeholder="تاريخ اليوم">
+    </div>
+    <div id="guestContainer"></div>
+    <button id="addGuestBtn" type="button">+ إضافة ضيف</button>
+    <div class="row" style="margin-top:20px;">
+      <label style="padding:10px; font-weight:bold;">الإجمالي الكلي:</label>
+      <input type="text" name="total" id="totalField" placeholder="0.00" readonly>
+    </div>
+    <button type="submit" id="sendBtn">إرسال الطلب وإنشاء الفاتورة</button>
   </form>
-
-  <h3>فواتير اليوم</h3>
-  <div id="invoiceList"></div>
+  <div class="invoices-section">
+    <div class="section-header">
+      <h3>📂 فواتير اليوم</h3>
+      <button type="button" class="refresh-btn" onclick="loadInvoices()">🔄 تحديث</button>
+    </div>
+    <div id="invoiceList"><p class="empty-msg">جاري التحميل...</p></div>
+  </div>
 </div>
 
 <script>
-/* 🔴 ضع رابط Google Apps Script */
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBt3Dm6LX1CKwg3Nw1pzz4UeJit6j31GxaON04BmhVXBvWj2ivrjTZ_GB6t-KOtzv0/exec";
-
-/* ====== STATE ====== */
-let currentUser = null;
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBt3Dm6LX1CKwg3Nw1pzz4UeJit6j31GxaON04BmhVXBvWj2ivrjTZ_GB6t-KOtzv0/exec"; // ضع رابط الويب آب هنا
 let guestCount = 0;
+let currentUser = null;
 
-/* ====== HELPERS ====== */
-const post = data =>
-  fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(data)
-  }).then(r => r.json());
+// إنشاء رقم فاتورة وتاريخ اليوم تلقائياً
+function generateInvoice() {
+  invoiceNumber.value = "IR-" + new Date().getTime();
+  todayField.value = new Date().toLocaleDateString("ar-AR");
+}
+generateInvoice();
 
-function invoiceNo() {
-  return "IR-" + Date.now();
+// إضافة ضيف
+function addGuest() {
+  guestCount++;
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <div class="group-title">بيانات الضيف ${guestCount}</div>
+    <div class="row">
+      <input name="name${guestCount}" placeholder="اسم الضيف">
+      <input type="date" name="checkin${guestCount}" onchange="calcNights(${guestCount})">
+    </div>
+    <div class="row">
+      <input type="date" name="checkout${guestCount}" onchange="calcNights(${guestCount})">
+      <input name="nights${guestCount}" placeholder="عدد الليالي" readonly>
+    </div>
+    <div class="row">
+      <select name="type${guestCount}">
+        <option value="">— نوع الغرفة —</option>
+        <option value="مفردة">مفردة</option>
+        <option value="مزدوجة">مزدوجة</option>
+        <option value="ثلاثية">ثلاثية</option>
+        <option value="رباعية">رباعية</option>
+        <option value="خماسية">خماسية</option>
+      </select>
+      <input type="number" name="rooms${guestCount}" value="1" min="1" placeholder="عدد الغرف">
+    </div>
+    <div class="row">
+      <input type="number" name="amount${guestCount}" step="0.01" placeholder="السعر" oninput="calcTotal()">
+    </div>
+  `;
+  guestContainer.appendChild(div);
+}
+addGuest();
+addGuestBtn.onclick = addGuest;
+
+// حساب الليالي
+function calcNights(i) {
+  const checkin = bookingForm[`checkin${i}`].value;
+  const checkout = bookingForm[`checkout${i}`].value;
+  bookingForm[`nights${i}`].value = checkin && checkout ? Math.max(0,new Date(checkout)-new Date(checkin))/86400000 + " ليلة" : "";
 }
 
-// دالة مساعدة لإرسال البيانات
-async function postToGAS(data) {
-  const res = await fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
+// حساب الإجمالي
+function calcTotal() {
+  let sum = 0;
+  bookingForm.querySelectorAll("input[name^='amount']").forEach(i=>sum+=parseFloat(i.value)||0);
+  totalField.value = sum.toFixed(2);
+}
+
+// دالة مساعدة POST
+async function postToGAS(data){
+  const res = await fetch(GOOGLE_SCRIPT_URL,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
     body: JSON.stringify(data)
   });
   return res.json();
 }
 
 // تسجيل الدخول
-loginForm.onsubmit = async e => {
+loginForm.onsubmit = async e=>{
   e.preventDefault();
-  loginMsg.textContent = "جاري التحقق...";
-  try {
-    const data = await postToGAS({
-      action: "login",
-      phone: phone.value,
-      password: password.value
-    });
-    if (data.status === "success") {
-      currentUser = data.user;
-      localStorage.setItem("phone", currentUser.phone);
-      userName.textContent = currentUser.username;
-      loginBox.style.display = "none";
-      appBox.style.display = "block";
+  loginMsg.textContent="جاري التحقق...";
+  try{
+    const data = await postToGAS({action:"login",phone:phone.value,password:password.value});
+    if(data.status==="success"){
+      currentUser=data.user;
+      localStorage.setItem("phone",currentUser.phone);
+      userName.textContent=currentUser.username;
+      loginBox.style.display="none";
+      appBox.style.display="block";
       loadInvoices();
-    } else {
-      loginMsg.textContent = data.message;
-    }
-  } catch(err) {
-    loginMsg.textContent = "خطأ في الاتصال: " + err.message;
-  }
+    } else { loginMsg.textContent=data.message; }
+  } catch(err){ loginMsg.textContent="خطأ في الاتصال: "+err.message; }
 };
 
 // إرسال نموذج الحجز
-bookingForm.onsubmit = async e => {
+bookingForm.onsubmit = async e=>{
   e.preventDefault();
-  sendBtn.disabled = true;
-
+  sendBtn.disabled=true;
   const formData = Object.fromEntries(new FormData(bookingForm).entries());
-  formData.action = "create_invoice";
-  formData.userId = currentUser.id;
-
-  try {
+  formData.action="create_invoice";
+  formData.userId=currentUser.id;
+  try{
     const res = await postToGAS(formData);
-    alert(res.message || "تم");
+    alert(res.message||"تم الحفظ!");
     bookingForm.reset();
-    guests.innerHTML = "";
-    guestCount = 0;
+    guestContainer.innerHTML=""; guestCount=0; addGuest();
+    generateInvoice();
     loadInvoices();
-  } catch(err) {
-    alert("فشل الاتصال: " + err.message);
-  } finally {
-    sendBtn.disabled = false;
-  }
+  }catch(err){ alert("فشل الاتصال: "+err.message); }
+  finally{ sendBtn.disabled=false; }
 };
 
 // جلب الفواتير
-async function loadInvoices() {
-  try {
-    const data = await postToGAS({ action: "get_invoices", userId: currentUser.id });
-    invoiceList.innerHTML = "";
-    (data.invoices || []).forEach(inv => {
-      invoiceList.innerHTML += `
-        <div class="invoice-card">
-          <div>${inv.name}<br><small>${inv.date}</small></div>
-          <a class="invoice-link" target="_blank" href="${inv.link}">PDF</a>
-        </div>`;
+async function loadInvoices(){
+  invoiceList.innerHTML='<p class="empty-msg">جاري التحميل...</p>';
+  try{
+    const data = await postToGAS({action:"get_invoices",userId:currentUser.id});
+    invoiceList.innerHTML="";
+    (data.invoices||[]).forEach(inv=>{
+      invoiceList.innerHTML+=`<div class="invoice-card"><div>${inv.name}<br><small>${inv.date}</small></div><a class="invoice-link" target="_blank" href="${inv.link}">PDF</a></div>`;
     });
-  } catch(err) {
-    invoiceList.innerHTML = "فشل تحميل الفواتير";
-  }
+    if((data.invoices||[]).length===0) invoiceList.innerHTML='<p class="empty-msg">لا توجد فواتير اليوم.</p>';
+  }catch(err){ invoiceList.innerHTML="فشل تحميل الفواتير"; }
 }
 
-// التحقق من الجلسة عند فتح الصفحة
-window.onload = async () => {
-  const phone = localStorage.getItem("phone");
+// تسجيل خروج
+function logout(){
+  currentUser=null;
+  localStorage.removeItem("phone");
+  loginBox.style.display="block";
+  appBox.style.display="none";
+}
+
+// التحقق من الجلسة عند التحميل
+window.onload=async()=>{
+  const phone=localStorage.getItem("phone");
   if(!phone) return;
-  try {
-    const res = await postToGAS({ action: "check", phone });
-    if(res.status === "success") {
-      currentUser = res.user;
-      userName.textContent = currentUser.username;
-      loginBox.style.display = "none";
-      appBox.style.display = "block";
-      loadInvoices();
-    }
-  } catch(err) { console.error(err); }
+  try{
+    const res = await postToGAS({action:"check",phone});
+    if(res.status==="success"){currentUser=res.user; userName.textContent=currentUser.username; loginBox.style.display="none"; appBox.style.display="block"; loadInvoices();}
+  }catch(err){ console.error(err); }
 };
 </script>
 
