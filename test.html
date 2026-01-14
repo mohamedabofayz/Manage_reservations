@@ -1,936 +1,627 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام توليد الفواتير الآلي</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f5f5f5;
-      direction: rtl;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    
-    h1 {
-      color: #2c3e50;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .form-section, .invoices-section {
-      margin-bottom: 30px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-    
-    .form-group {
-      margin-bottom: 15px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #34495e;
-    }
-    
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    
-    button {
-      background-color: #3498db;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      margin: 5px;
-    }
-    
-    button:hover {
-      background-color: #2980b9;
-    }
-    
-    button.delete-btn {
-      background-color: #e74c3c;
-    }
-    
-    button.delete-btn:hover {
-      background-color: #c0392b;
-    }
-    
-    button.update-btn {
-      background-color: #f39c12;
-    }
-    
-    button.update-btn:hover {
-      background-color: #d35400;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: right;
-    }
-    
-    th {
-      background-color: #34495e;
-      color: white;
-    }
-    
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    
-    .hidden {
-      display: none;
-    }
-    
-    .login-form {
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 30px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      text-align: center;
-    }
-    
-    .error-message {
-      color: #e74c3c;
-      margin: 10px 0;
-    }
-    
-    .success-message {
-      color: #27ae60;
-      margin: 10px 0;
-    }
-    
-    .guest-section {
-      border: 1px dashed #ccc;
-      padding: 15px;
-      margin: 15px 0;
-      border-radius: 5px;
-    }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.4);
-    }
-    
-    .modal-content {
-      background-color: white;
-      margin: 5% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 800px;
-      border-radius: 8px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    
-    .close {
-      color: #aaa;
-      float: left;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
-    .close:hover {
-      color: black;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نموذج طلب حجز (يدوي)</title>
+<style>
+  body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; color: #333; margin: 0; }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+  h2 { text-align: center; margin-bottom: 20px; color: #444; }
+  .row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
+  .group-title { font-weight: bold; margin-top: 25px; background: #f1f3f5; padding: 10px; border-radius: 6px; border-right: 4px solid #007bff; margin-bottom: 10px; }
+  button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+  button:hover { background: #005fcc; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
+  #addGuestBtn { background: #28a745; margin-top: 10px; width: auto; display: block; margin-right: auto; margin-left: auto; padding: 10px 30px; }
+  #addGuestBtn:hover { background: #218838; }
+  #totalField { background-color: #e9ecef; font-weight: bold; color: #333; font-size: 1.1em; text-align: center; }
+  
+  /* Invoice Section Styles */
+  .invoices-section { margin-top: 40px; border-top: 2px dashed #ddd; padding-top: 20px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+  .refresh-btn { background: #6c757d; width: auto; padding: 8px 15px; margin: 0; font-size: 14px; }
+  .refresh-btn:hover { background: #5a6268; }
+  
+  .invoice-card { background: #fdfdfd; border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+  .invoice-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  .invoice-info { text-align: right; }
+  .invoice-info strong { display: block; margin-bottom: 4px; color: #333; font-size: 1.1em; }
+  .invoice-info span { font-size: 12px; color: #777; display: block; }
+  .invoice-link { text-decoration: none; background: #dc3545; color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; white-space: nowrap; margin-right: 10px; }
+  .invoice-link:hover { background: #c82333; }
+  .empty-msg { text-align: center; color: #777; padding: 20px; font-style: italic; }
+
+  @media (max-width: 600px) { .row { flex-direction: column; } }
+</style>
 </head>
 <body>
-  <!-- نموذج تسجيل الدخول -->
-  <div id="loginForm" class="login-form">
-    <h2>تسجيل الدخول إلى النظام</h2>
-    <div id="loginMessages"></div>
-    <div class="form-group">
-      <label for="phone">رقم الجوال:</label>
-      <input type="tel" id="phone" required>
-    </div>
-    <div class="form-group">
-      <label for="password">كلمة المرور:</label>
-      <input type="password" id="password" required>
-    </div>
-    <button onclick="login()">تسجيل الدخول</button>
-  </div>
 
-  <!-- واجهة النظام الرئيسية -->
-  <div id="mainInterface" class="hidden">
-    <h1>نظام توليد الفواتير الآلي</h1>
-    
-    <!-- قسم إنشاء الفاتورة -->
-    <div class="form-section">
-      <h2>إنشاء فاتورة جديدة</h2>
-      <form id="invoiceForm">
-        <div class="form-group">
-          <label for="customerName">اسم العميل:</label>
-          <input type="text" id="customerName" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="customerPhone">هاتف العميل:</label>
-          <input type="tel" id="customerPhone" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="hotelName">اسم الفندق:</label>
-          <input type="text" id="hotelName" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="roomType">نوع الغرفة:</label>
-          <input type="text" id="roomType" required>
-        </div>
-        
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label for="checkInDate">تاريخ الدخول:</label>
-            <input type="date" id="checkInDate" required onchange="calculateNights()">
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="checkOutDate">تاريخ الخروج:</label>
-            <input type="date" id="checkOutDate" required onchange="calculateNights()">
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="numNights">عدد الليالي:</label>
-            <input type="number" id="numNights" min="1" readonly>
-          </div>
-        </div>
-        
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label for="pricePerNight">سعر الليلة:</label>
-            <input type="number" id="pricePerNight" min="0" step="0.01" required onchange="calculateTotal()">
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="totalAmount">المبلغ الإجمالي:</label>
-            <input type="number" id="totalAmount" min="0" step="0.01" readonly>
-          </div>
-        </div>
-        
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label for="amountWithoutTax">المبلغ بدون ضريبة:</label>
-            <input type="number" id="amountWithoutTax" min="0" step="0.01" readonly>
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="taxAmount">مبلغ الضريبة (15%):</label>
-            <input type="number" id="taxAmount" min="0" step="0.01" readonly>
-          </div>
-        </div>
-        
-        <!-- قسم إضافة الضيوف -->
-        <h3>بيانات الضيوف</h3>
-        <div id="guestsContainer">
-          <!-- سيتم إضافة حقول الضيوف ديناميكيًا -->
-        </div>
-        
-        <button type="button" onclick="addGuestField()">+ إضافة ضيف</button>
-        <button type="button" onclick="removeGuestField()">- إزالة ضيف</button>
-        
-        <br><br>
-        <button type="button" onclick="submitInvoice()">إنشاء فاتورة</button>
-        <button type="button" onclick="logout()" style="background-color: #95a5a6;">تسجيل خروج</button>
-      </form>
+<div id="loginBox" class="container">
+  <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo">
+  <h2>تسجيل دخول النظام</h2>
+  <form id="loginForm">
+    <div class="row">
+      <input type="tel" id="phone" placeholder="رقم الجوال" required>
     </div>
-    
-    <!-- قسم عرض الفواتير -->
-    <div class="invoices-section">
-      <h2>الفواتير المُنشأة</h2>
-      <div id="invoicesTableContainer">
-        <table id="invoicesTable">
-          <thead>
-            <tr>
-              <th>م</th>
-              <th>التاريخ</th>
-              <th>اسم العميل</th>
-              <th>هاتف العميل</th>
-              <th>اسم الفندق</th>
-              <th>نوع الغرفة</th>
-              <th>تاريخ الدخول</th>
-              <th>تاريخ الخروج</th>
-              <th>عدد الليالي</th>
-              <th>سعر الليلة</th>
-              <th>المبلغ الإجمالي</th>
-              <th>العمليات</th>
-            </tr>
-          </thead>
-          <tbody id="invoicesTableBody">
-            <!-- سيتم ملء البيانات ديناميكيًا -->
-          </tbody>
-        </table>
-      </div>
+    <div class="row">
+      <input type="password" id="password" placeholder="كلمة المرور" required>
+    </div>
+    <button type="submit" id="loginBtn">تسجيل الدخول</button>
+  </form>
+  <p id="loginMsg" style="text-align:center; color:#dc3545; margin-top:10px;"></p>
+</div>
+
+<div id="appBox" class="container" style="display:none;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo" style="margin:0; width:120px;">
+    <div style="text-align: left;">
+      <div style="margin-bottom:5px;">مرحباً، <span id="userName" style="font-weight:bold; color:#007bff;"></span></div>
+      <button onclick="logout()" style="background:#dc3545; padding:5px 15px; border-radius:5px; color:white; border:none; cursor:pointer; font-size:14px; width:auto; margin:0;">تسجيل خروج</button>
     </div>
   </div>
 
-  <!-- نافذة التعديل -->
-  <div id="updateModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeUpdateModal()">&times;</span>
-      <h2>تعديل الفاتورة</h2>
-      <form id="updateInvoiceForm">
-        <input type="hidden" id="updateInvoiceId">
-        
-        <div class="form-group">
-          <label for="updateCustomerName">اسم العميل:</label>
-          <input type="text" id="updateCustomerName" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="updateCustomerPhone">هاتف العميل:</label>
-          <input type="tel" id="updateCustomerPhone" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="updateHotelName">اسم الفندق:</label>
-          <input type="text" id="updateHotelName" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="updateRoomType">نوع الغرفة:</label>
-          <input type="text" id="updateRoomType" required>
-        </div>
-        
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label for="updateCheckInDate">تاريخ الدخول:</label>
-            <input type="date" id="updateCheckInDate" required onchange="updateCalculateNights()">
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="updateCheckOutDate">تاريخ الخروج:</label>
-            <input type="date" id="updateCheckOutDate" required onchange="updateCalculateNights()">
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="updateNumNights">عدد الليالي:</label>
-            <input type="number" id="updateNumNights" min="1" readonly>
-          </div>
-        </div>
-        
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label for="updatePricePerNight">سعر الليلة:</label>
-            <input type="number" id="updatePricePerNight" min="0" step="0.01" required onchange="updateCalculateTotal()">
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="updateTotalAmount">المبلغ الإجمالي:</label>
-            <input type="number" id="updateTotalAmount" min="0" step="0.01" readonly>
-          </div>
-        </div>
-        
-        <div class="form-row" style="display: flex; gap: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label for="updateAmountWithoutTax">المبلغ بدون ضريبة:</label>
-            <input type="number" id="updateAmountWithoutTax" min="0" step="0.01" readonly>
-          </div>
-          
-          <div class="form-group" style="flex: 1;">
-            <label for="updateTaxAmount">مبلغ الضريبة (15%):</label>
-            <input type="number" id="updateTaxAmount" min="0" step="0.01" readonly>
-          </div>
-        </div>
-        
-        <!-- قسم تعديل الضيوف -->
-        <h3>بيانات الضيوف</h3>
-        <div id="updateGuestsContainer">
-          <!-- سيتم إضافة حقول الضيوف ديناميكيًا -->
-        </div>
-        
-        <button type="button" onclick="addUpdateGuestField()">+ إضافة ضيف</button>
-        <button type="button" onclick="removeUpdateGuestField()">- إزالة ضيف</button>
-        
-        <br><br>
-        <button type="button" onclick="updateInvoice()">تحديث الفاتورة</button>
-        <button type="button" onclick="closeUpdateModal()">إلغاء</button>
-      </form>
+  <h2>نموذج طلب حجز (يدوي)</h2>
+  <form id="bookingForm">
+    <div class="row">
+      <input type="text" name="invoice" id="invoiceNumber" placeholder="رقم الفاتورة" required readonly style="background:#f9f9f9;">
+      <input type="text" name="clientName" placeholder="إسم العميل" required>
     </div>
-  </div>
-
-  <script>
-    // المتغيرات العامة
-    let sessionId = localStorage.getItem('sessionId') || '';
-    let userRole = localStorage.getItem('role') || '';
+    <div class="row">
+      <input type="text" name="clientPhone" placeholder="رقم الجوال" required>
+      <input type="text" name="address" placeholder="العنوان">
+    </div>
+    <div class="row">
+      <input type="email" name="clientEmail" placeholder="البريد الالكتروني">
+    </div>
     
-    // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
-    window.onload = function() {
-      if (sessionId) {
-        loadInvoices();
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('mainInterface').classList.remove('hidden');
-      }
+    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+    
+    <div class="row">
+      <input type="text" name="hotelName" placeholder="اسم الفندق" required>
+      <input type="text" name="hotelPhone" placeholder="جوال الفندق">
+    </div>
+    <div class="row">
+      <input type="email" name="hotelEmail" placeholder="البريد الفندق">
+      <input type="text" name="todayDate" id="todayField" placeholder="تاريخ اليوم" readonly>
+    </div>
+
+    <div id="guestContainer"></div>
+    
+    <button id="addGuestBtn" type="button">+ إضافة ضيف</button>
+    
+    <div class="row" style="margin-top:20px;">
+      <label style="padding:10px; font-weight:bold; display:flex; align-items:center;">الإجمالي الكلي (شامل الضريبة):</label>
+      <input type="text" name="total" id="totalField" placeholder="0.00" readonly>
+    </div>
+    
+    <button type="submit" id="sendBtn">إرسال الطلب وإنشاء الفاتورة</button>
+  </form>
+
+  <div class="invoices-section">
+    <div class="section-header">
+      <h3 style="margin:0;">📂 آخر الفواتير</h3>
+      <button type="button" class="refresh-btn" onclick="loadInvoices()">🔄 تحديث</button>
+    </div>
+    <div id="invoiceList"><p class="empty-msg">جاري التحميل...</p></div>
+  </div>
+</div>
+
+<script>
+// هام: استبدل هذا الرابط برابط Web App الخاص بك بعد عمل Deploy جديد
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBt3Dm6LX1CKwg3Nw1pzz4UeJit6j31GxaON04BmhVXBvWj2ivrjTZ_GB6t-KOtzv0/exec";
+
+let guestCount = 0;
+let currentUser = null;
+
+// --- Helper Functions ---
+
+function generateInvoice() {
+  // إنشاء رقم عشوائي فريد
+  invoiceNumber.value = "INV-" + Math.floor(Math.random() * 1000000);
+  // تنسيق التاريخ ليتوافق مع Google Sheet
+  const d = new Date();
+  todayField.value = d.toISOString().split('T')[0]; 
+}
+
+function addGuest() {
+  guestCount++;
+  // ملاحظة: قمنا بتسمية الحقول مثل amount1, amount2 لتتوافق مع دالة buildInvoiceRow في السكربت
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <div class="group-title">بيانات الضيف ${guestCount}</div>
+    <div class="row">
+      <input name="name${guestCount}" placeholder="اسم الضيف">
+      <input type="date" name="checkin${guestCount}" onchange="calcNights(${guestCount})">
+    </div>
+    <div class="row">
+      <input type="date" name="checkout${guestCount}" onchange="calcNights(${guestCount})">
+      <input name="nights${guestCount}" placeholder="عدد الليالي" readonly style="background:#eee;">
+    </div>
+    <div class="row">
+      <select name="type${guestCount}">
+        <option value="">— نوع الغرفة —</option>
+        <option value="مفردة">مفردة</option>
+        <option value="مزدوجة">مزدوجة</option>
+        <option value="ثلاثية">ثلاثية</option>
+        <option value="رباعية">رباعية</option>
+        <option value="خماسية">خماسية</option>
+      </select>
+      <input type="number" name="rooms${guestCount}" value="1" min="1" placeholder="عدد الغرف">
+    </div>
+    <div class="row">
+      <input type="number" name="amount${guestCount}" step="0.01" placeholder="السعر الإجمالي لهذا الضيف" oninput="calcTotal()" style="border-color: #28a745;">
+    </div>
+  `;
+  guestContainer.appendChild(div);
+}
+
+function calcNights(i) {
+  const form = document.getElementById('bookingForm');
+  const checkin = form[`checkin${i}`].value;
+  const checkout = form[`checkout${i}`].value;
+  if (checkin && checkout) {
+    const diff = new Date(checkout) - new Date(checkin);
+    const nights = Math.max(0, diff / (1000 * 60 * 60 * 24));
+    form[`nights${i}`].value = nights + " ليلة";
+  } else {
+    form[`nights${i}`].value = "";
+  }
+}
+
+function calcTotal() {
+  let sum = 0;
+  const inputs = document.querySelectorAll("input[name^='amount']");
+  inputs.forEach(input => {
+    sum += parseFloat(input.value) || 0;
+  });
+  document.getElementById('totalField').value = sum.toFixed(2);
+}
+
+// دالة الاتصال بالسكربت
+async function postToGAS(data) {
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      // نستخدم no-cors أحياناً لكن هنا نريد قراءة الرد لذا نستخدم الطريقة العادية
+      // تأكد أن السكربت منشور كـ "Anyone"
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  } catch (error) {
+    throw new Error("فشل الاتصال بالسيرفر");
+  }
+}
+
+// --- Event Handlers ---
+
+// تسجيل الدخول
+loginForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const msg = document.getElementById('loginMsg');
+  
+  btn.disabled = true;
+  btn.textContent = "جاري التحقق...";
+  msg.textContent = "";
+
+  try {
+    // تعديل المفتاح ليطابق phone_number في السكربت
+    const payload = {
+      action: "login",
+      phone_number: document.getElementById('phone').value,
+      password: document.getElementById('password').value
     };
 
-    // تسجيل الدخول
-    async function login() {
-      const phone = document.getElementById('phone').value;
-      const password = document.getElementById('password').value;
+    const data = await postToGAS(payload);
+
+    if (data.status === "success") {
+      currentUser = data.user;
+      localStorage.setItem("phone_number", currentUser.phone_number); // حفظ الرقم للجلسة
       
-      if (!phone || !password) {
-        showMessage('الرجاء إدخال رقم الجوال وكلمة المرور', 'error');
-        return;
-      }
+      document.getElementById('userName').textContent = currentUser.username;
+      document.getElementById('loginBox').style.display = "none";
+      document.getElementById('appBox').style.display = "block";
       
-      try {
-        const response = await fetch('/exec?action=login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: `phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}`
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          sessionId = result.sessionId;
-          userRole = result.role;
-          localStorage.setItem('sessionId', sessionId);
-          localStorage.setItem('role', userRole);
-          
-          document.getElementById('loginForm').classList.add('hidden');
-          document.getElementById('mainInterface').classList.remove('hidden');
-          showMessage('تم تسجيل الدخول بنجاح', 'success');
-          
-          // تهيئة حقول إضافة الضيوف
-          initializeGuestFields();
-          loadInvoices();
-        } else {
-          showMessage('رقم الجوال أو كلمة المرور غير صحيحة', 'error');
-        }
-      } catch (error) {
-        showMessage('حدث خطأ أثناء محاولة تسجيل الدخول', 'error');
-      }
+      // تهيئة النموذج
+      generateInvoice();
+      guestContainer.innerHTML = ""; guestCount = 0; addGuest();
+      loadInvoices();
+    } else {
+      msg.textContent = data.message || "خطأ في تسجيل الدخول";
     }
+  } catch (err) {
+    msg.textContent = "خطأ في الاتصال: " + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "تسجيل الدخول";
+  }
+};
 
-    // تسجيل الخروج
-    function logout() {
-      sessionId = '';
-      userRole = '';
-      localStorage.removeItem('sessionId');
-      localStorage.removeItem('role');
+// إرسال الفاتورة
+bookingForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('sendBtn');
+  if(!confirm("هل أنت متأكد من إرسال البيانات؟")) return;
+
+  btn.disabled = true;
+  btn.textContent = "جاري الإرسال...";
+
+  const formData = new FormData(bookingForm);
+  const data = Object.fromEntries(formData.entries());
+  
+  // إضافة البيانات اللازمة للسكربت
+  data.userId = currentUser.id;
+  // ملاحظة: لا نرسل action محدد، السكربت سيعتبره إنشاء فاتورة بشكل افتراضي
+
+  try {
+    const res = await postToGAS(data);
+    
+    if (res.status === "success") {
+      alert("✅ تم الحفظ بنجاح!");
+      bookingForm.reset();
+      guestContainer.innerHTML = ""; 
+      guestCount = 0; 
+      addGuest();
+      generateInvoice();
       
-      document.getElementById('mainInterface').classList.add('hidden');
-      document.getElementById('loginForm').classList.remove('hidden');
-      document.getElementById('phone').value = '';
-      document.getElementById('password').value = '';
+      // تحديث القائمة بعد ثانية لضمان المعالجة
+      setTimeout(loadInvoices, 1500);
+    } else {
+      alert("⚠️ حدث خطأ: " + res.message);
     }
+  } catch (err) {
+    alert("❌ فشل الاتصال: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "إرسال الطلب وإنشاء الفاتورة";
+  }
+};
 
-    // حساب عدد الليالي
-    function calculateNights() {
-      const checkIn = new Date(document.getElementById('checkInDate').value);
-      const checkOut = new Date(document.getElementById('checkOutDate').value);
-      
-      if (checkIn && checkOut && checkOut >= checkIn) {
-        const diffTime = Math.abs(checkOut - checkIn);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        document.getElementById('numNights').value = diffDays;
-        calculateTotal(); // حساب المجموع عند تغيير عدد الليالي
-      }
-    }
+// جلب الفواتير
+async function loadInvoices() {
+  const list = document.getElementById('invoiceList');
+  list.innerHTML = '<p class="empty-msg">جاري تحميل الفواتير...</p>';
+  
+  if (!currentUser) return;
 
-    // حساب المبلغ الإجمالي
-    function calculateTotal() {
-      const pricePerNight = parseFloat(document.getElementById('pricePerNight').value) || 0;
-      const numNights = parseInt(document.getElementById('numNights').value) || 0;
-      
-      const totalAmount = pricePerNight * numNights;
-      const taxAmount = totalAmount * 0.15;
-      const amountWithoutTax = totalAmount - taxAmount;
-      
-      document.getElementById('totalAmount').value = totalAmount.toFixed(2);
-      document.getElementById('taxAmount').value = taxAmount.toFixed(2);
-      document.getElementById('amountWithoutTax').value = amountWithoutTax.toFixed(2);
-    }
-
-    // تهيئة حقول الضيوف
-    function initializeGuestFields() {
-      const container = document.getElementById('guestsContainer');
-      container.innerHTML = ''; // مسح الحقول الحالية
-      
-      // إضافة 4 حقول افتراضية لبيانات الضيوف
-      for (let i = 0; i < 4; i++) {
-        const guestDiv = document.createElement('div');
-        guestDiv.className = 'guest-section';
-        guestDiv.innerHTML = `
-          <h4>ضيف ${i + 1}</h4>
-          <div class="form-row" style="display: flex; gap: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="guestName${i}">الاسم:</label>
-              <input type="text" id="guestName${i}" placeholder="اسم الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="guestNationality${i}">الجنسية:</label>
-              <input type="text" id="guestNationality${i}" placeholder="جنسية الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="guestIdNumber${i}">رقم الهوية:</label>
-              <input type="text" id="guestIdNumber${i}" placeholder="رقم هوية الضيف">
-            </div>
-          </div>
-        `;
-        container.appendChild(guestDiv);
-      }
-    }
-
-    // إضافة حقل ضيف
-    function addGuestField() {
-      const container = document.getElementById('guestsContainer');
-      const guestCount = container.children.length;
-      
-      if (guestCount < 4) {
-        const guestDiv = document.createElement('div');
-        guestDiv.className = 'guest-section';
-        guestDiv.innerHTML = `
-          <h4>ضيف ${guestCount + 1}</h4>
-          <div class="form-row" style="display: flex; gap: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="guestName${guestCount}">الاسم:</label>
-              <input type="text" id="guestName${guestCount}" placeholder="اسم الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="guestNationality${guestCount}">الجنسية:</label>
-              <input type="text" id="guestNationality${guestCount}" placeholder="جنسية الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="guestIdNumber${guestCount}">رقم الهوية:</label>
-              <input type="text" id="guestIdNumber${guestCount}" placeholder="رقم هوية الضيف">
-            </div>
-          </div>
-        `;
-        container.appendChild(guestDiv);
-      } else {
-        showMessage('لا يمكن إضافة أكثر من 4 ضيوف', 'error');
-      }
-    }
-
-    // إزالة حقل ضيف
-    function removeGuestField() {
-      const container = document.getElementById('guestsContainer');
-      const guestCount = container.children.length;
-      
-      if (guestCount > 1) {
-        container.removeChild(container.lastChild);
-      } else {
-        showMessage('يجب أن يكون هناك على الأقل ضيف واحد', 'error');
-      }
-    }
-
-    // إرسال الفاتورة
-    async function submitInvoice() {
-      // جمع بيانات النموذج
-      const formData = new FormData();
-      formData.append('sessionId', sessionId);
-      formData.append('customerName', document.getElementById('customerName').value);
-      formData.append('customerPhone', document.getElementById('customerPhone').value);
-      formData.append('hotelName', document.getElementById('hotelName').value);
-      formData.append('roomType', document.getElementById('roomType').value);
-      formData.append('checkInDate', document.getElementById('checkInDate').value);
-      formData.append('checkOutDate', document.getElementById('checkOutDate').value);
-      formData.append('numNights', document.getElementById('numNights').value);
-      formData.append('pricePerNight', document.getElementById('pricePerNight').value);
-      formData.append('totalAmount', document.getElementById('totalAmount').value);
-      formData.append('amountWithoutTax', document.getElementById('amountWithoutTax').value);
-      formData.append('taxAmount', document.getElementById('taxAmount').value);
-      
-      // جمع بيانات الضيوف
-      for (let i = 0; i < 4; i++) {
-        const name = document.getElementById(`guestName${i}`).value;
-        const nationality = document.getElementById(`guestNationality${i}`).value;
-        const idNumber = document.getElementById(`guestIdNumber${i}`).value;
-        
-        if (name || nationality || idNumber) {
-          formData.append(`guestName${i}`, name);
-          formData.append(`guestNationality${i}`, nationality);
-          formData.append(`guestIdNumber${i}`, idNumber);
-        }
-      }
-      
-      try {
-        const response = await fetch('/exec?action=submitInvoice', {
-          method: 'POST',
-          body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          showMessage('تم إنشاء الفاتورة بنجاح', 'success');
-          document.getElementById('invoiceForm').reset();
-          initializeGuestFields(); // إعادة تهيئة حقول الضيوف
-          loadInvoices(); // تحديث قائمة الفواتير
-        } else {
-          showMessage(`خطأ: ${result.error}`, 'error');
-        }
-      } catch (error) {
-        showMessage('حدث خطأ أثناء إنشاء الفاتورة', 'error');
-      }
-    }
-
-    // تحميل الفواتير
-    async function loadInvoices() {
-      try {
-        const response = await fetch(`/exec?action=getInvoices`);
-        const result = await response.json();
-        
-        if (result.success) {
-          displayInvoices(result.invoices);
-        } else {
-          showMessage(`خطأ في تحميل الفواتير: ${result.error}`, 'error');
-        }
-      } catch (error) {
-        showMessage('حدث خطأ أثناء تحميل الفواتير', 'error');
-      }
-    }
-
-    // عرض الفواتير في الجدول
-    function displayInvoices(invoices) {
-      const tbody = document.getElementById('invoicesTableBody');
-      tbody.innerHTML = '';
-      
-      invoices.forEach(invoice => {
-        const row = document.createElement('tr');
-        
-        // تحديد أزرار العمليات بناءً على دور المستخدم
-        let actionsCell = '<td>';
-        if (userRole === 'admin') {
-          actionsCell += `<button class="update-btn" onclick="openUpdateModal(${invoice.id})">تعديل</button>`;
-          actionsCell += `<button class="delete-btn" onclick="confirmDelete(${invoice.id})">حذف</button>`;
-        }
-        
-        if (invoice.pdfUrl) {
-          actionsCell += `<a href="${invoice.pdfUrl}" target="_blank"><button>PDF</button></a>`;
-        }
-        actionsCell += '</td>';
-        
-        row.innerHTML = `
-          <td>${invoice.id}</td>
-          <td>${invoice.date}</td>
-          <td>${invoice.customerName}</td>
-          <td>${invoice.customerPhone}</td>
-          <td>${invoice.hotelName}</td>
-          <td>${invoice.roomType}</td>
-          <td>${invoice.checkInDate}</td>
-          <td>${invoice.checkOutDate}</td>
-          <td>${invoice.numNights}</td>
-          <td>${invoice.pricePerNight}</td>
-          <td>${invoice.totalAmount}</td>
-          ${actionsCell}
-        `;
-        
-        tbody.appendChild(row);
-      });
-    }
-
-    // وظائف التعديل
-    function openUpdateModal(invoiceId) {
-      // تحميل بيانات الفاتورة
-      fetch(`/exec?action=getInvoices`)
-        .then(response => response.json())
-        .then(result => {
-          if (result.success) {
-            const invoice = result.invoices.find(inv => inv.id == invoiceId);
-            if (invoice) {
-              // ملء الحقول ببيانات الفاتورة
-              document.getElementById('updateInvoiceId').value = invoice.id;
-              document.getElementById('updateCustomerName').value = invoice.customerName || '';
-              document.getElementById('updateCustomerPhone').value = invoice.customerPhone || '';
-              document.getElementById('updateHotelName').value = invoice.hotelName || '';
-              document.getElementById('updateRoomType').value = invoice.roomType || '';
-              document.getElementById('updateCheckInDate').value = invoice.checkInDate || '';
-              document.getElementById('updateCheckOutDate').value = invoice.checkOutDate || '';
-              document.getElementById('updateNumNights').value = invoice.numNights || '';
-              document.getElementById('updatePricePerNight').value = invoice.pricePerNight || '';
-              document.getElementById('updateTotalAmount').value = invoice.totalAmount || '';
-              document.getElementById('updateAmountWithoutTax').value = invoice.amountWithoutTax || '';
-              document.getElementById('updateTaxAmount').value = invoice.taxAmount || '';
-              
-              // ملء حقول الضيوف
-              fillUpdateGuestFields(invoice);
-              
-              // عرض النافذة
-              document.getElementById('updateModal').style.display = 'block';
-            } else {
-              showMessage('الفاتورة غير موجودة', 'error');
-            }
-          } else {
-            showMessage('خطأ في تحميل بيانات الفاتورة', 'error');
-          }
-        })
-        .catch(error => {
-          showMessage('حدث خطأ أثناء تحميل بيانات الفاتورة', 'error');
-        });
-    }
-
-    // ملء حقول الضيوف في نافذة التعديل
-    function fillUpdateGuestFields(invoice) {
-      const container = document.getElementById('updateGuestsContainer');
-      container.innerHTML = ''; // مسح الحقول الحالية
-      
-      // تقسيم بيانات الضيوف من السلسلة النصية
-      const guestNames = invoice.guestNames ? invoice.guestNames.split(', ') : [];
-      const guestNationalities = invoice.guestNationalities ? invoice.guestNationalities.split(', ') : [];
-      const guestIdNumbers = invoice.guestIdNumbers ? invoice.guestIdNumbers.split(', ') : [];
-      
-      // إنشاء حقول الضيوف
-      for (let i = 0; i < 4; i++) {
-        const guestDiv = document.createElement('div');
-        guestDiv.className = 'guest-section';
-        guestDiv.innerHTML = `
-          <h4>ضيف ${i + 1}</h4>
-          <div class="form-row" style="display: flex; gap: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="updateGuestName${i}">الاسم:</label>
-              <input type="text" id="updateGuestName${i}" value="${guestNames[i] || ''}" placeholder="اسم الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="updateGuestNationality${i}">الجنسية:</label>
-              <input type="text" id="updateGuestNationality${i}" value="${guestNationalities[i] || ''}" placeholder="جنسية الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="updateGuestIdNumber${i}">رقم الهوية:</label>
-              <input type="text" id="updateGuestIdNumber${i}" value="${guestIdNumbers[i] || ''}" placeholder="رقم هوية الضيف">
-            </div>
-          </div>
-        `;
-        container.appendChild(guestDiv);
-      }
-    }
-
-    // حساب عدد الليالي في نافذة التعديل
-    function updateCalculateNights() {
-      const checkIn = new Date(document.getElementById('updateCheckInDate').value);
-      const checkOut = new Date(document.getElementById('updateCheckOutDate').value);
-      
-      if (checkIn && checkOut && checkOut >= checkIn) {
-        const diffTime = Math.abs(checkOut - checkIn);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        document.getElementById('updateNumNights').value = diffDays;
-        updateCalculateTotal(); // حساب المجموع عند تغيير عدد الليالي
-      }
-    }
-
-    // حساب المبلغ الإجمالي في نافذة التعديل
-    function updateCalculateTotal() {
-      const pricePerNight = parseFloat(document.getElementById('updatePricePerNight').value) || 0;
-      const numNights = parseInt(document.getElementById('updateNumNights').value) || 0;
-      
-      const totalAmount = pricePerNight * numNights;
-      const taxAmount = totalAmount * 0.15;
-      const amountWithoutTax = totalAmount - taxAmount;
-      
-      document.getElementById('updateTotalAmount').value = totalAmount.toFixed(2);
-      document.getElementById('updateTaxAmount').value = taxAmount.toFixed(2);
-      document.getElementById('updateAmountWithoutTax').value = amountWithoutTax.toFixed(2);
-    }
-
-    // إضافة حقل ضيف في نافذة التعديل
-    function addUpdateGuestField() {
-      const container = document.getElementById('updateGuestsContainer');
-      const guestCount = container.children.length;
-      
-      if (guestCount < 4) {
-        const guestDiv = document.createElement('div');
-        guestDiv.className = 'guest-section';
-        guestDiv.innerHTML = `
-          <h4>ضيف ${guestCount + 1}</h4>
-          <div class="form-row" style="display: flex; gap: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="updateGuestName${guestCount}">الاسم:</label>
-              <input type="text" id="updateGuestName${guestCount}" placeholder="اسم الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="updateGuestNationality${guestCount}">الجنسية:</label>
-              <input type="text" id="updateGuestNationality${guestCount}" placeholder="جنسية الضيف">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="updateGuestIdNumber${guestCount}">رقم الهوية:</label>
-              <input type="text" id="updateGuestIdNumber${guestCount}" placeholder="رقم هوية الضيف">
-            </div>
-          </div>
-        `;
-        container.appendChild(guestDiv);
-      } else {
-        showMessage('لا يمكن إضافة أكثر من 4 ضيوف', 'error');
-      }
-    }
-
-    // إزالة حقل ضيف في نافذة التعديل
-    function removeUpdateGuestField() {
-      const container = document.getElementById('updateGuestsContainer');
-      const guestCount = container.children.length;
-      
-      if (guestCount > 1) {
-        container.removeChild(container.lastChild);
-      } else {
-        showMessage('يجب أن يكون هناك على الأقل ضيف واحد', 'error');
-      }
-    }
-
-    // تحديث الفاتورة
-    async function updateInvoice() {
-      const invoiceId = document.getElementById('updateInvoiceId').value;
-      
-      // جمع بيانات النموذج
-      const formData = new FormData();
-      formData.append('sessionId', sessionId);
-      formData.append('invoiceId', invoiceId);
-      formData.append('customerName', document.getElementById('updateCustomerName').value);
-      formData.append('customerPhone', document.getElementById('updateCustomerPhone').value);
-      formData.append('hotelName', document.getElementById('updateHotelName').value);
-      formData.append('roomType', document.getElementById('updateRoomType').value);
-      formData.append('checkInDate', document.getElementById('updateCheckInDate').value);
-      formData.append('checkOutDate', document.getElementById('updateCheckOutDate').value);
-      formData.append('numNights', document.getElementById('updateNumNights').value);
-      formData.append('pricePerNight', document.getElementById('updatePricePerNight').value);
-      formData.append('totalAmount', document.getElementById('updateTotalAmount').value);
-      formData.append('amountWithoutTax', document.getElementById('updateAmountWithoutTax').value);
-      formData.append('taxAmount', document.getElementById('updateTaxAmount').value);
-      
-      // جمع بيانات الضيوف
-      for (let i = 0; i < 4; i++) {
-        const name = document.getElementById(`updateGuestName${i}`).value;
-        const nationality = document.getElementById(`updateGuestNationality${i}`).value;
-        const idNumber = document.getElementById(`updateGuestIdNumber${i}`).value;
-        
-        if (name || nationality || idNumber) {
-          formData.append(`guestName${i}`, name);
-          formData.append(`guestNationality${i}`, nationality);
-          formData.append(`guestIdNumber${i}`, idNumber);
-        }
-      }
-      
-      try {
-        const response = await fetch('/exec?action=updateInvoice', {
-          method: 'POST',
-          body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          showMessage('تم تحديث الفاتورة بنجاح', 'success');
-          closeUpdateModal();
-          loadInvoices(); // تحديث قائمة الفواتير
-        } else {
-          showMessage(`خطأ: ${result.error}`, 'error');
-        }
-      } catch (error) {
-        showMessage('حدث خطأ أثناء تحديث الفاتورة', 'error');
-      }
-    }
-
-    // إغلاق نافذة التعديل
-    function closeUpdateModal() {
-      document.getElementById('updateModal').style.display = 'none';
-    }
-
-    // تأكيد الحذف
-    function confirmDelete(invoiceId) {
-      if (confirm('هل أنت متأكد أنك تريد حذف هذه الفاتورة؟ لا يمكن التراجع عن هذا الإجراء.')) {
-        deleteInvoice(invoiceId);
-      }
-    }
-
-    // حذف الفاتورة
-    async function deleteInvoice(invoiceId) {
-      const formData = new FormData();
-      formData.append('sessionId', sessionId);
-      formData.append('invoiceId', invoiceId);
-      
-      try {
-        const response = await fetch('/exec?action=deleteInvoice', {
-          method: 'POST',
-          body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          showMessage('تم حذف الفاتورة بنجاح', 'success');
-          loadInvoices(); // تحديث قائمة الفواتير
-        } else {
-          showMessage(`خطأ: ${result.error}`, 'error');
-        }
-      } catch (error) {
-        showMessage('حدث خطأ أثناء حذف الفاتورة', 'error');
-      }
-    }
-
-    // عرض الرسائل
-    function showMessage(message, type) {
-      const messagesDiv = type === 'error' ? 
-        document.querySelector('#loginMessages, .error-message') || document.createElement('div') : 
-        document.createElement('div');
-      
-      // إذا لم يكن هناك عنصر رسائل محدد، ننشئ واحدًا مؤقتًا
-      if (!document.contains(messagesDiv) || !messagesDiv.parentElement) {
-        messagesDiv.className = type === 'error' ? 'error-message' : 'success-message';
-        // نضعه في أعلى النموذج
-        const form = document.querySelector('.form-section') || document.getElementById('loginForm');
-        form.insertBefore(messagesDiv, form.firstChild);
-      }
-      
-      messagesDiv.textContent = message;
-      messagesDiv.style.color = type === 'error' ? '#e74c3c' : '#27ae60';
-      
-      // إزالة الرسالة بعد فترة
-      setTimeout(() => {
-        if (messagesDiv.parentElement) {
-          messagesDiv.parentElement.removeChild(messagesDiv);
-        }
-      }, 5000);
-    }
-
-    // إغلاق النافذة عند النقر على "x"
-    document.querySelector('.close')?.addEventListener('click', closeUpdateModal);
-
-    // إغلاق النافذة عند النقر خارج المحتوى
-    window.onclick = function(event) {
-      const modal = document.getElementById('updateModal');
-      if (event.target === modal) {
-        closeUpdateModal();
-      }
+  try {
+    const payload = {
+      action: "get_invoices",
+      userId: currentUser.id,
+      role: currentUser.role
     };
-  </script>
+
+    const data = await postToGAS(payload);
+    
+    if (!data.invoices || data.invoices.length === 0) {
+      list.innerHTML = '<p class="empty-msg">لا توجد فواتير مسجلة اليوم.</p>';
+      return;
+    }
+
+    let html = "";
+    data.invoices.forEach(inv => {
+      // inv.invoice_no, inv.name, inv.date, inv.link حسب السكربت المصحح
+      let buttonsHtml = '';
+      if (currentUser && currentUser.role === "admin") {
+        buttonsHtml = `<button class="edit-btn" onclick="showEditInvoice('${inv.invoice_no}')">تعديل</button><button class="delete-btn" onclick="deleteInvoice('${inv.invoice_no}')">حذف</button>`;
+      }
+      html += `
+        <div class="invoice-card">
+          <div class="invoice-info">
+            <strong>${inv.name || 'بدون اسم'}</strong>
+            <span>فاتورة: ${inv.invoice_no || '#'} | ${inv.date}</span>
+          </div>
+          <div style="display: flex; gap: 5px;">
+            <a class="invoice-link" target="_blank" href="${inv.link}">عرض PDF</a>
+            ${buttonsHtml}
+          </div>
+        </div>
+      `;
+    });
+    list.innerHTML = html;
+
+    // إضافة أنماط للأزرار
+    const style = document.createElement('style');
+    style.textContent = `
+      .edit-btn, .delete-btn {
+        width: auto;
+        padding: 8px 12px;
+        margin: 0;
+        font-size: 14px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+      }
+      .edit-btn {
+        background: #ffc107;
+        color: #212529;
+      }
+      .edit-btn:hover {
+        background: #e0a800;
+      }
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+      }
+      .delete-btn:hover {
+        background: #c82333;
+      }
+    `;
+    if (!document.querySelector('#invoice-buttons-style')) {
+      style.id = 'invoice-buttons-style';
+      document.head.appendChild(style);
+    }
+
+  } catch (err) {
+    list.innerHTML = '<p class="empty-msg" style="color:red">فشل تحميل القائمة</p>';
+    console.error(err);
+  }
+}
+
+// تسجيل الخروج
+async function logout() {
+  const phone = localStorage.getItem("phone_number");
+  if(phone) {
+    // محاولة إبلاغ السيرفر بإنهاء الجلسة
+    postToGAS({ action: "logout", phone_number: phone }).catch(()=>{});
+  }
+  
+  currentUser = null;
+  localStorage.removeItem("phone_number");
+  document.getElementById('loginBox').style.display = "block";
+  document.getElementById('appBox').style.display = "none";
+  document.getElementById('loginForm').reset();
+}
+
+// التحقق من الجلسة عند فتح الصفحة
+window.onload = async () => {
+  const phone = localStorage.getItem("phone_number");
+  if (!phone) return;
+
+  // إظهار رسالة تحميل صغيرة
+  document.getElementById('loginMsg').textContent = "استعادة الجلسة...";
+
+  try {
+    const res = await postToGAS({ action: "check_session", phone_number: phone });
+    
+    if (res.status === "success") {
+      currentUser = res.user;
+      document.getElementById('userName').textContent = currentUser.username;
+      document.getElementById('loginBox').style.display = "none";
+      document.getElementById('appBox').style.display = "block";
+      
+      generateInvoice();
+      addGuest(); // إضافة صف ضيف واحد افتراضياً
+      loadInvoices();
+    } else {
+      // الجلسة انتهت
+      localStorage.removeItem("phone_number");
+    }
+  } catch (err) {
+    console.error("Session check failed", err);
+  } finally {
+    document.getElementById('loginMsg').textContent = "";
+  }
+};
+
+// دالة عرض نموذج تعديل الفاتورة
+async function showEditInvoice(invoiceNo) {
+  // التحقق من صلاحيات المستخدم
+  if (!currentUser || currentUser.role !== "admin") {
+    alert("لا تملك صلاحيات التعديل - فقط المشرفون يمكنهم تعديل الفواتير");
+    return;
+  }
+  
+  // جلب بيانات الفاتورة
+  try {
+    const payload = {
+      action: "get_invoice_by_number",
+      invoice_no: invoiceNo,
+      phone_number: currentUser.phone_number
+    };
+    
+    const response = await postToGAS(payload);
+    if (response.status === "success" && response.invoice) {
+      fillEditForm(response.invoice);
+    } else {
+      alert("فشل في جلب بيانات الفاتورة: " + (response.message || "غير معروف"));
+    }
+  } catch (err) {
+    alert("حدث خطأ أثناء جلب بيانات الفاتورة: " + err.message);
+  }
+}
+
+// دالة ملء نموذج التعديل
+function fillEditForm(invoiceData) {
+  // تغيير النموذج إلى وضع التعديل
+  document.getElementById('invoiceNumber').value = invoiceData.invoice || '';
+  document.getElementById('invoiceNumber').readOnly = true; // لا يمكن تغيير رقم الفاتورة
+  
+  // ملء الحقول الأخرى
+  document.querySelector('[name="clientName"]').value = invoiceData.clientName || '';
+  document.querySelector('[name="clientPhone"]').value = invoiceData.clientPhone || '';
+  document.querySelector('[name="address"]').value = invoiceData.address || '';
+  document.querySelector('[name="clientEmail"]').value = invoiceData.clientEmail || '';
+  document.querySelector('[name="hotelName"]').value = invoiceData.hotelName || '';
+  document.querySelector('[name="hotelPhone"]').value = invoiceData.hotelPhone || '';
+  document.querySelector('[name="hotelEmail"]').value = invoiceData.hotelEmail || '';
+  document.querySelector('[name="todayDate"]').value = invoiceData.todayDate || '';
+  
+  // حذف الضيوف الحاليين وإضافة ضيوف الفاتورة
+  document.getElementById('guestContainer').innerHTML = '';
+  let guestCount = 0;
+  
+  // إضافة الضيوف من بيانات الفاتورة (حتى 4 ضيوف)
+  for (let i = 1; i <= 4; i++) {
+    if (invoiceData[`name${i}`] || invoiceData[`amount${i}`]) {
+      guestCount++;
+      addGuest();
+      
+      // ملء حقول الضيف
+      const form = document.getElementById('bookingForm');
+      if (form.querySelector(`[name="name${guestCount}"]`)) {
+        form.querySelector(`[name="name${guestCount}"]`).value = invoiceData[`name${i}`] || '';
+        form.querySelector(`[name="checkin${guestCount}"]`).value = invoiceData[`checkin${i}`] || '';
+        form.querySelector(`[name="checkout${guestCount}"]`).value = invoiceData[`checkout${i}`] || '';
+        form.querySelector(`[name="nights${guestCount}"]`).value = invoiceData[`nights${i}`] || '';
+        form.querySelector(`[name="type${guestCount}"]`).value = invoiceData[`type${i}`] || '';
+        form.querySelector(`[name="amount${guestCount}"]`).value = invoiceData[`amount${i}`] || '';
+      }
+    }
+  }
+  
+  // إذا لم تتم إضافة أي ضيف، نضيف ضيف واحد فارغ
+  if (guestCount === 0) {
+    guestCount = 1;
+    addGuest();
+  }
+  
+  // تحديث المجموع
+  document.getElementById('totalField').value = invoiceData.total || '0.00';
+  
+  // تغيير نص الزر إلى "تحديث الفاتورة"
+  document.getElementById('sendBtn').textContent = "تحديث الفاتورة";
+  document.getElementById('sendBtn').onclick = function(e) {
+    e.preventDefault();
+    updateInvoice();
+  };
+}
+
+// دالة تحديث الفاتورة
+async function updateInvoice() {
+  if (!confirm("هل أنت متأكد من تحديث بيانات الفاتورة؟")) return;
+  
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = "جاري التحديث...";
+  
+  // جمع بيانات النموذج
+  const formData = new FormData(document.getElementById('bookingForm'));
+  const data = Object.fromEntries(formData.entries());
+  
+  // إرسال طلب التحديث
+  try {
+    const payload = {
+      action: "update_invoice",
+      invoice_no: data.invoice,
+      updated_data: data,
+      phone_number: currentUser.phone_number
+    };
+    
+    const response = await postToGAS(payload);
+    if (response.status === "success") {
+      alert("✅ تم تحديث الفاتورة بنجاح!");
+      
+      // إعادة تعيين النموذج إلى الوضع الافتراضي
+      resetFormToDefault();
+      
+      // تحديث قائمة الفواتير
+      loadInvoices();
+    } else {
+      alert("⚠️ حدث خطأ أثناء التحديث: " + response.message);
+    }
+  } catch (err) {
+    alert("❌ فشل الاتصال أثناء التحديث: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "تحديث الفاتورة";
+  }
+}
+
+// دالة إعادة تعيين النموذج إلى الحالة الافتراضية
+function resetFormToDefault() {
+  // إعادة تعيين الأزرار
+  document.getElementById('sendBtn').textContent = "إرسال الطلب وإنشاء الفاتورة";
+  
+  // إزالة الحدث وتعيينه مجددًا
+  document.getElementById('sendBtn').onclick = null;
+  document.getElementById('bookingForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('sendBtn');
+    if(!confirm("هل أنت متأكد من إرسال البيانات؟")) return;
+
+    btn.disabled = true;
+    btn.textContent = "جاري الإرسال...";
+
+    const formData = new FormData(bookingForm);
+    const data = Object.fromEntries(formData.entries());
+    
+    // إضافة البيانات اللازمة للسكربت
+    data.userId = currentUser.id;
+    // ملاحظة: لا نرسل action محدد، السكربت سيعتبره إنشاء فاتورة بشكل افتراضي
+
+    try {
+      const res = await postToGAS(data);
+      
+      if (res.status === "success") {
+        alert("✅ تم الحفظ بنجاح!");
+        bookingForm.reset();
+        guestContainer.innerHTML = ""; 
+        guestCount = 0; 
+        addGuest();
+        generateInvoice();
+        
+        // تحديث القائمة بعد ثانية لضمان المعالجة
+        setTimeout(loadInvoices, 1500);
+      } else {
+        alert("⚠️ حدث خطأ: " + res.message);
+      }
+    } catch (err) {
+      alert("❌ فشل الاتصال: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "إرسال الطلب وإنشاء الفاتورة";
+    }
+  };
+  
+  // إعادة تعيين رقم الفاتورة وجعله قابل للكتابة
+  document.getElementById('invoiceNumber').readOnly = false;
+  document.getElementById('invoiceNumber').value = '';
+  
+  // إعادة تعيين الحقول الأخرى
+  document.getElementById('bookingForm').reset();
+  
+  // إزالة جميع الضيوف وإضافة واحد فقط
+  document.getElementById('guestContainer').innerHTML = '';
+  guestCount = 0;
+  addGuest();
+  
+  // إنشاء رقم فاتورة جديد
+  generateInvoice();
+}
+
+// دالة حذف الفاتورة
+async function deleteInvoice(invoiceNo) {
+  // التحقق من صلاحيات المستخدم
+  if (!currentUser || currentUser.role !== "admin") {
+    alert("لا تملك صلاحيات الحذف - فقط المشرفون يمكنهم حذف الفواتير");
+    return;
+  }
+  
+  if (!confirm("هل أنت متأكد من حذف الفاتورة رقم " + invoiceNo + "؟\n\nتحذير: سيتم حذف الفاتورة وملف PDF من جوجل درايف.")) return;
+  
+  try {
+    const payload = {
+      action: "delete_invoice",
+      invoice_no: invoiceNo,
+      phone_number: currentUser.phone_number
+    };
+    
+    const response = await postToGAS(payload);
+    if (response.status === "success") {
+      alert("✅ تم حذف الفاتورة بنجاح!");
+      loadInvoices(); // تحديث القائمة
+    } else {
+      alert("⚠️ حدث خطأ أثناء الحذف: " + response.message);
+    }
+  } catch (err) {
+    alert("❌ فشل الاتصال أثناء الحذف: " + err.message);
+  }
+}
+</script>
+
 </body>
 </html>
