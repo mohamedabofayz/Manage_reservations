@@ -482,13 +482,13 @@ function fillEditForm(invoiceData) {
   document.getElementById('guestContainer').innerHTML = '';
   let guestCount = 0;
   
-  // إضافة الضيوف من بيانات الفاتورة (حتى 4 ضيوف)
+  // إضافة الضيوف من بيانات الفاتورة (حتى 4 ضيوف) بالترتيب الصحيح
   for (let i = 1; i <= 4; i++) {
     if (invoiceData[`name${i}`] || invoiceData[`amount${i}`]) {
       guestCount++;
       addGuest();
       
-      // ملء حقول الضيف
+      // ملء حقول الضيف - نستخدم guestCount كفهرس للحقول لنضمن الترتيب الصحيح
       const form = document.getElementById('bookingForm');
       if (form.querySelector(`[name="name${guestCount}"]`)) {
         form.querySelector(`[name="name${guestCount}"]`).value = invoiceData[`name${i}`] || '';
