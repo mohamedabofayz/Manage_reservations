@@ -476,7 +476,18 @@ function fillEditForm(invoiceData) {
   document.querySelector('[name="hotelName"]').value = invoiceData.hotelName || '';
   document.querySelector('[name="hotelPhone"]').value = invoiceData.hotelPhone || '';
   document.querySelector('[name="hotelEmail"]').value = invoiceData.hotelEmail || '';
-  document.querySelector('[name="todayDate"]').value = invoiceData.todayDate || '';
+  // تنسيق التاريخ إذا كان موجودًا
+  let formattedDate = invoiceData.todayDate || '';
+  if (formattedDate) {
+    // إذا كان التاريخ بتنسيق ISO (مثل YYYY-MM-DD أو YYYY-MM-DDTHH:mm:ss.sssZ)
+    if (typeof formattedDate === 'string' && formattedDate.includes('T')) {
+      formattedDate = formattedDate.substring(0, 10); // أخذ الجزء الأول فقط YYYY-MM-DD
+    } else if (formattedDate instanceof Date) {
+      // إذا كان التاريخ ككائن Date، نقوم بتحويله إلى تنسيق YYYY-MM-DD
+      formattedDate = formattedDate.toISOString().split('T')[0];
+    }
+  }
+  document.querySelector('[name="todayDate"]').value = formattedDate;
   
   // حذف الضيوف الحاليين وإضافة ضيوف الفاتورة
   document.getElementById('guestContainer').innerHTML = '';
@@ -495,8 +506,36 @@ function fillEditForm(invoiceData) {
         form.querySelector(`[name="checkin${guestCount}"]`).value = invoiceData[`checkin${i}`] || '';
         form.querySelector(`[name="checkout${guestCount}"]`).value = invoiceData[`checkout${i}`] || '';
         form.querySelector(`[name="nights${guestCount}"]`).value = invoiceData[`nights${i}`] || '';
-        form.querySelector(`[name="type${guestCount}"]`).value = invoiceData[`type${i}`] || '';
-        form.querySelector(`[name="amount${guestCount}"]`).value = invoiceData[`amount${i}`] || '';
+        // ملء نوع الغرفة وعدد الغرف
+        const roomType = invoiceData[`type${i}`] || '';
+        const roomAmount = invoiceData[`amount${i}`] || '';
+        
+        // فصل نوع الغرفة وعدد الغرف إذا كانت البيانات مخزنة بطريقة محددة
+        // نفترض أن نوع الغرفة قد يحتوي على "نوع غرفة عدد" أو "عدد نوع غرفة"
+        if (roomType) {
+          form.querySelector(`[name="type${guestCount}"]`).value = roomType;
+        }
+        
+        // محاولة استخراج عدد الغرف من نوع الغرفة أو من الحقل المخصص
+        let roomCount = 1; // افتراضي
+        // نحاول استخراج عدد الغرف من النوع إذا كان مخزنًا فيه
+        if (typeof roomType === 'string' && roomType.includes(' ')) {
+          // محاولة استخراج الرقم من النص (مثلاً "2 مزدوجة")
+          const parts = roomType.trim().split(/\s+/);
+          const firstPart = parts[0];
+          const numericPart = parseInt(firstPart);
+          if (!isNaN(numericPart)) {
+            roomCount = numericPart;
+            // تحديث نوع الغرفة بدون الرقم
+            form.querySelector(`[name="type${guestCount}"]`).value = parts.slice(1).join(' ');
+          }
+        }
+        // ملء حقل عدد الغرف (إذا وُجد)
+        if (form.querySelector(`[name="rooms${guestCount}"]`)) {
+          form.querySelector(`[name="rooms${guestCount}"]`).value = roomCount;
+        }
+        
+        form.querySelector(`[name="amount${guestCount}"]`).value = roomAmount;
       }
     }
   }
