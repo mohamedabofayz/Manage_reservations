@@ -131,7 +131,7 @@ function addGuest() {
   
   // التحقق من عدم تجاوز الحد الأقصى (4 ضيوف)
   if (guestCount > 4) {
-    alert("لا يمكن إضافة أكثر من 4 ضيوف");
+    showMessage("لا يمكن إضافة أكثر من 4 ضيوف", "error");
     guestCount--; // التراجع عن الزيادة
     return;
   }
@@ -264,7 +264,7 @@ loginForm.onsubmit = async (e) => {
 bookingForm.onsubmit = async (e) => {
   e.preventDefault();
   const btn = document.getElementById('sendBtn');
-  if(!confirm("هل أنت متأكد من إرسال البيانات؟")) return;
+  if(!showConfirm("هل أنت متأكد من إرسال البيانات؟")) return;
 
   btn.disabled = true;
   btn.textContent = "جاري الإرسال...";
@@ -280,7 +280,7 @@ bookingForm.onsubmit = async (e) => {
     const res = await postToGAS(data);
     
     if (res.status === "success") {
-      alert("✅ تم الحفظ بنجاح!");
+      showMessage("✅ تم الحفظ بنجاح!", "success");
       bookingForm.reset();
       guestContainer.innerHTML = ""; 
       guestCount = 0; 
@@ -294,10 +294,10 @@ bookingForm.onsubmit = async (e) => {
       // تحديث القائمة بعد ثانية لضمان المعالجة
       setTimeout(loadInvoices, 1500);
     } else {
-      alert("⚠️ حدث خطأ: " + res.message);
+      showMessage("⚠️ حدث خطأ: " + res.message, "error");
     }
   } catch (err) {
-    alert("❌ فشل الاتصال: " + err.message);
+    showMessage("❌ فشل الاتصال: " + err.message, "error");
   } finally {
     btn.disabled = false;
     btn.textContent = "إرسال الطلب وإنشاء الفاتورة";
@@ -439,7 +439,7 @@ window.onload = async () => {
 async function showEditInvoice(invoiceNo) {
   // التحقق من صلاحيات المستخدم
   if (!currentUser || currentUser.role !== "admin") {
-    alert("لا تملك صلاحيات التعديل - فقط المشرفون يمكنهم تعديل الفواتير");
+    showMessage("لا تملك صلاحيات التعديل - فقط المشرفون يمكنهم تعديل الفواتير", "error");
     return;
   }
   
@@ -455,10 +455,10 @@ async function showEditInvoice(invoiceNo) {
     if (response.status === "success" && response.invoice) {
       fillEditForm(response.invoice);
     } else {
-      alert("فشل في جلب بيانات الفاتورة: " + (response.message || "غير معروف"));
+      showMessage("فشل في جلب بيانات الفاتورة: " + (response.message || "غير معروف"), "error");
     }
   } catch (err) {
-    alert("حدث خطأ أثناء جلب بيانات الفاتورة: " + err.message);
+    showMessage("حدث خطأ أثناء جلب بيانات الفاتورة: " + err.message, "error");
   }
 }
 
@@ -520,7 +520,7 @@ function fillEditForm(invoiceData) {
 
 // دالة تحديث الفاتورة
 async function updateInvoice() {
-  if (!confirm("هل أنت متأكد من تحديث بيانات الفاتورة؟")) return;
+  if (!showConfirm("هل أنت متأكد من تحديث بيانات الفاتورة؟")) return;
   
   const btn = document.getElementById('sendBtn');
   btn.disabled = true;
@@ -541,7 +541,7 @@ async function updateInvoice() {
     
     const response = await postToGAS(payload);
     if (response.status === "success") {
-      alert("✅ تم تحديث الفاتورة بنجاح!");
+      showMessage("✅ تم تحديث الفاتورة بنجاح!", "success");
       
       // إعادة تعيين النموذج إلى الوضع الافتراضي
       resetFormToDefault();
@@ -549,10 +549,10 @@ async function updateInvoice() {
       // تحديث قائمة الفواتير
       loadInvoices();
     } else {
-      alert("⚠️ حدث خطأ أثناء التحديث: " + response.message);
+      showMessage("⚠️ حدث خطأ أثناء التحديث: " + response.message, "error");
     }
   } catch (err) {
-    alert("❌ فشل الاتصال أثناء التحديث: " + err.message);
+    showMessage("❌ فشل الاتصال أثناء التحديث: " + err.message, "error");
   } finally {
     btn.disabled = false;
     btn.textContent = "تحديث الفاتورة";
@@ -569,7 +569,7 @@ function resetFormToDefault() {
   document.getElementById('bookingForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('sendBtn');
-    if(!confirm("هل أنت متأكد من إرسال البيانات؟")) return;
+    if(!showConfirm("هل أنت متأكد من إرسال البيانات؟")) return;
 
     btn.disabled = true;
     btn.textContent = "جاري الإرسال...";
@@ -585,7 +585,7 @@ function resetFormToDefault() {
       const res = await postToGAS(data);
       
       if (res.status === "success") {
-        alert("✅ تم الحفظ بنجاح!");
+        showMessage("✅ تم الحفظ بنجاح!", "success");
         bookingForm.reset();
         guestContainer.innerHTML = ""; 
         guestCount = 0; 
@@ -595,10 +595,10 @@ function resetFormToDefault() {
         // تحديث القائمة بعد ثانية لضمان المعالجة
         setTimeout(loadInvoices, 1500);
       } else {
-        alert("⚠️ حدث خطأ: " + res.message);
+        showMessage("⚠️ حدث خطأ: " + res.message, "error");
       }
     } catch (err) {
-      alert("❌ فشل الاتصال: " + err.message);
+      showMessage("❌ فشل الاتصال: " + err.message, "error");
     } finally {
       btn.disabled = false;
       btn.textContent = "إرسال الطلب وإنشاء الفاتورة";
@@ -629,11 +629,11 @@ function resetFormToDefault() {
 async function deleteInvoice(invoiceNo) {
   // التحقق من صلاحيات المستخدم
   if (!currentUser || currentUser.role !== "admin") {
-    alert("لا تملك صلاحيات الحذف - فقط المشرفون يمكنهم حذف الفواتير");
+    showMessage("لا تملك صلاحيات الحذف - فقط المشرفون يمكنهم حذف الفواتير", "error");
     return;
   }
   
-  if (!confirm("هل أنت متأكد من حذف الفاتورة رقم " + invoiceNo + "؟\n\nتحذير: سيتم حذف الفاتورة وملف PDF من جوجل درايف.")) return;
+  if (!showConfirm("هل أنت متأكد من حذف الفاتورة رقم " + invoiceNo + "؟\n\nتحذير: سيتم حذف الفاتورة وملف PDF من جوجل درايف.")) return;
   
   try {
     const payload = {
@@ -644,15 +644,97 @@ async function deleteInvoice(invoiceNo) {
     
     const response = await postToGAS(payload);
     if (response.status === "success") {
-      alert("✅ تم حذف الفاتورة بنجاح!");
+      showMessage("✅ تم حذف الفاتورة بنجاح!", "success");
       loadInvoices(); // تحديث القائمة
     } else {
-      alert("⚠️ حدث خطأ أثناء الحذف: " + response.message);
+      showMessage("⚠️ حدث خطأ أثناء الحذف: " + response.message, "error");
     }
   } catch (err) {
-    alert("❌ فشل الاتصال أثناء الحذف: " + err.message);
+    showMessage("❌ فشل الاتصال أثناء الحذف: " + err.message, "error");
   }
 }
+</script>
+
+<!-- إضافة واجهة رسائل للمستخدم -->
+<div id="messageBox" style="position:fixed; top:20px; right:20px; z-index:9999; display:none;">
+  <div id="messageContent" style="padding:15px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:250px; max-width:400px; color:white;"></div>
+</div>
+
+<!-- إضافة واجهة تأكيد للمستخدم -->
+<div id="confirmBox" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:none; justify-content:center; align-items:center;">
+  <div style="background:white; padding:25px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.2); min-width:300px; text-align:center;">
+    <p id="confirmMessage" style="margin:0 0 20px 0; font-size:16px;"></p>
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button id="confirmYes" style="flex:1; padding:10px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer;">نعم</button>
+      <button id="confirmNo" style="flex:1; padding:10px; background:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">لا</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// دالة عرض الرسائل للمستخدم
+function showMessage(message, type = 'info') {
+  const messageBox = document.getElementById('messageBox');
+  const messageContent = document.getElementById('messageContent');
+  
+  // تحديد لون الخلفية حسب نوع الرسالة
+  let bgColor = '#007bff'; // افتراضي (معلومة)
+  if (type === 'success') bgColor = '#28a745'; // نجاح
+  else if (type === 'error') bgColor = '#dc3545'; // خطأ
+  else if (type === 'warning') bgColor = '#ffc107'; // تحذير
+  
+  messageContent.textContent = message;
+  messageContent.style.backgroundColor = bgColor;
+  
+  messageBox.style.display = 'block';
+  
+  // إخفاء الرسالة تلقائيًا بعد 5 ثوانٍ
+  setTimeout(() => {
+    messageBox.style.display = 'none';
+  }, 5000);
+}
+
+// دالة تأكيد المستخدم
+function showConfirm(message) {
+  return new Promise((resolve) => {
+    const confirmBox = document.getElementById('confirmBox');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+    
+    confirmMessage.textContent = message;
+    
+    const handleYes = () => {
+      confirmBox.style.display = 'none';
+      confirmYes.removeEventListener('click', handleYes);
+      confirmNo.removeEventListener('click', handleNo);
+      resolve(true);
+    };
+    
+    const handleNo = () => {
+      confirmBox.style.display = 'none';
+      confirmYes.removeEventListener('click', handleYes);
+      confirmNo.removeEventListener('click', handleNo);
+      resolve(false);
+    };
+    
+    confirmYes.addEventListener('click', handleYes);
+    confirmNo.addEventListener('click', handleNo);
+    
+    confirmBox.style.display = 'flex';
+  });
+}
+
+// تهيئة التطبيق
+document.addEventListener('DOMContentLoaded', function() {
+  // تهيئة واجهة الرسائل
+  const messageBox = document.getElementById('messageBox');
+  messageBox.style.display = 'none';
+  
+  // تهيئة واجهة التأكيد
+  const confirmBox = document.getElementById('confirmBox');
+  confirmBox.style.display = 'none';
+});
 </script>
 
 </body>
