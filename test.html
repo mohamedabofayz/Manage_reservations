@@ -269,9 +269,23 @@ bookingForm.onsubmit = async (e) => {
   btn.disabled = true;
   btn.textContent = "جاري الإرسال...";
 
+  // تحويل FormData إلى كائن عادي
   const formData = new FormData(bookingForm);
+  const data = Object.fromEntries(formData.entries());
   data.userId = currentUser.id;
-  // ملاحظة: لا نرسل action محدد، السكربت سيعتبره إنشاء فاتورة بشكل افتراضي
+  data.action = "create_invoice"; // تحديد الإجراء لتفادي الالتباس
+  
+  // دمج نوع الغرفة وعدد الغرف لكل ضيف
+  for (let i = 1; i <= guestCount; i++) {
+    const typeField = `type${i}`;
+    const roomsField = `rooms${i}`;
+    if (data[typeField] && data[roomsField]) {
+      // حفظ القيم الأصلية في حقول منفصلة ودمجها في تنسيق موحد
+      const roomType = data[typeField];
+      const roomCount = data[roomsField];
+      data[typeField] = `${roomType} X ${roomCount} غرفة`; // دمج نوع الغرفة وعدد الغرف
+    }
+  }
 
   try {
     const res = await postToGAS(data);
@@ -669,9 +683,23 @@ function resetFormToDefault() {
     btn.disabled = true;
     btn.textContent = "جاري الإرسال...";
 
+    // تحويل FormData إلى كائن عادي
     const formData = new FormData(bookingForm);
+    const data = Object.fromEntries(formData.entries());
     data.userId = currentUser.id;
-    // ملاحظة: لا نرسل action محدد، السكربت سيعتبره إنشاء فاتورة بشكل افتراضي
+    data.action = "create_invoice"; // تحديد الإجراء لتفادي الالتباس
+    
+    // دمج نوع الغرفة وعدد الغرف لكل ضيف
+    for (let i = 1; i <= guestCount; i++) {
+      const typeField = `type${i}`;
+      const roomsField = `rooms${i}`;
+      if (data[typeField] && data[roomsField]) {
+        // حفظ القيم الأصلية في حقول منفصلة ودمجها في تنسيق موحد
+        const roomType = data[typeField];
+        const roomCount = data[roomsField];
+        data[typeField] = `${roomType} X ${roomCount} غرفة`; // دمج نوع الغرفة وعدد الغرف
+      }
+    }
 
     try {
       const res = await postToGAS(data);
@@ -681,6 +709,10 @@ function resetFormToDefault() {
         bookingForm.reset();
         guestContainer.innerHTML = ""; 
         guestCount = 0; 
+        // تفعيل زر الإضافة إذا كان معطلًا
+        const addGuestBtn = document.getElementById('addGuestBtn');
+        addGuestBtn.disabled = false;
+        addGuestBtn.textContent = '+ إضافة ضيف';
         addGuest();
         generateInvoice();
         
