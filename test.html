@@ -270,9 +270,6 @@ bookingForm.onsubmit = async (e) => {
   btn.textContent = "جاري الإرسال...";
 
   const formData = new FormData(bookingForm);
-  const data = Object.fromEntries(formData.entries());
-  
-  // إضافة البيانات اللازمة للسكربت
   data.userId = currentUser.id;
   // ملاحظة: لا نرسل action محدد، السكربت سيعتبره إنشاء فاتورة بشكل افتراضي
 
@@ -491,15 +488,23 @@ function fillEditForm(invoiceData) {
   
   // حذف الضيوف الحاليين وإضافة ضيوف الفاتورة
   document.getElementById('guestContainer').innerHTML = '';
-  let guestCount = 0;
+  guestCount = 0; // إعادة تعيين العد
   
-  // إضافة الضيوف من بيانات الفاتورة (حتى 4 ضيوف) بالترتيب الصحيح
+  // تحديد عدد الضيوف في الفاتورة (التحقق من وجود بيانات ضيوف)
+  let maxGuestIndex = 0;
   for (let i = 1; i <= 4; i++) {
-    if (invoiceData[`name${i}`] || invoiceData[`amount${i}`]) {
+    if (invoiceData[`name${i}`] || invoiceData[`amount${i}`] || invoiceData[`checkin${i}`] || invoiceData[`checkout${i}`] || invoiceData[`type${i}`]) {
+      maxGuestIndex = i;
+    }
+  }
+  
+  // إضافة الضيوف من بيانات الفاتورة (حتى الحد الأقصى من الضيوف الموجودين)
+  for (let i = 1; i <= maxGuestIndex; i++) {
+    if (invoiceData[`name${i}`] || invoiceData[`amount${i}`] || invoiceData[`checkin${i}`] || invoiceData[`checkout${i}`] || invoiceData[`type${i}`]) {
       guestCount++;
       addGuest();
       
-      // ملء حقول الضيف - نستخدم guestCount كفهرس للحقول لنضمن الترتيب الصحيح
+      // ملء حقول الضيف - نستخدم الفهرس الأصلي من قاعدة البيانات (i) لضمان دقة البيانات
       const form = document.getElementById('bookingForm');
       if (form.querySelector(`[name="name${guestCount}"]`)) {
         form.querySelector(`[name="name${guestCount}"]`).value = invoiceData[`name${i}`] || '';
@@ -541,7 +546,14 @@ function fillEditForm(invoiceData) {
           const parts = roomType.trim().split('X');
           if (parts.length === 2) {
             roomTypeName = parts[0].trim(); // نوع الغرفة
-            roomCount = parseInt(parts[1].trim()) || 1; // عدد الغرف
+            // استخراج عدد الغرف من النص مثل "1 غرفة" أو "2 غرف"
+            const roomCountText = parts[1].trim();
+            const roomCountMatch = roomCountText.match(/\d+/);
+            if (roomCountMatch) {
+              roomCount = parseInt(roomCountMatch[0]);
+            } else {
+              roomCount = 1; // افتراضي
+            }
           }
         } else if (typeof roomType === 'string' && roomType.includes(' ')) {
           // محاولة استخراج الرقم من النص (مثلاً "2 مزدوجة")
@@ -607,7 +619,7 @@ async function updateInvoice() {
       
       // دمج نوع الغرفة وعدد الغرف في تنسيق مناسب
       if (roomType && roomCount) {
-        const combinedRoomType = `${roomType} X ${roomCount} غرفة`;
+        const combinedRoomType = `${roomType} X ${roomCount} ${parseInt(roomCount) > 1 ? 'غرف' : 'غرفة'}`;
         data[`type${i}`] = combinedRoomType;
       }
     }
@@ -658,9 +670,6 @@ function resetFormToDefault() {
     btn.textContent = "جاري الإرسال...";
 
     const formData = new FormData(bookingForm);
-    const data = Object.fromEntries(formData.entries());
-    
-    // إضافة البيانات اللازمة للسكربت
     data.userId = currentUser.id;
     // ملاحظة: لا نرسل action محدد، السكربت سيعتبره إنشاء فاتورة بشكل افتراضي
 
