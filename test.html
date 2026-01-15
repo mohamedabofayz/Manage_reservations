@@ -503,34 +503,61 @@ function fillEditForm(invoiceData) {
       const form = document.getElementById('bookingForm');
       if (form.querySelector(`[name="name${guestCount}"]`)) {
         form.querySelector(`[name="name${guestCount}"]`).value = invoiceData[`name${i}`] || '';
-        form.querySelector(`[name="checkin${guestCount}"]`).value = invoiceData[`checkin${i}`] || '';
-        form.querySelector(`[name="checkout${guestCount}"]`).value = invoiceData[`checkout${i}`] || '';
+        
+        // تنسيق تواريخ الدخول والخروج لعرضها بشكل صحيح في حقول التاريخ
+        let checkinDate = invoiceData[`checkin${i}`] || '';
+        if (checkinDate) {
+          if (typeof checkinDate === 'string' && checkinDate.includes('T')) {
+            checkinDate = checkinDate.substring(0, 10);
+          } else if (checkinDate instanceof Date) {
+            checkinDate = checkinDate.toISOString().split('T')[0];
+          }
+        }
+        form.querySelector(`[name="checkin${guestCount}"]`).value = checkinDate;
+        
+        let checkoutDate = invoiceData[`checkout${i}`] || '';
+        if (checkoutDate) {
+          if (typeof checkoutDate === 'string' && checkoutDate.includes('T')) {
+            checkoutDate = checkoutDate.substring(0, 10);
+          } else if (checkoutDate instanceof Date) {
+            checkoutDate = checkoutDate.toISOString().split('T')[0];
+          }
+        }
+        form.querySelector(`[name="checkout${guestCount}"]`).value = checkoutDate;
+        
         form.querySelector(`[name="nights${guestCount}"]`).value = invoiceData[`nights${i}`] || '';
+        
         // ملء نوع الغرفة وعدد الغرف
         const roomType = invoiceData[`type${i}`] || '';
         const roomAmount = invoiceData[`amount${i}`] || '';
         
-        // فصل نوع الغرفة وعدد الغرف إذا كانت البيانات مخزنة بطريقة محددة
-        // نفترض أن نوع الغرفة قد يحتوي على "نوع غرفة عدد" أو "عدد نوع غرفة"
-        if (roomType) {
-          form.querySelector(`[name="type${guestCount}"]`).value = roomType;
-        }
-        
-        // محاولة استخراج عدد الغرف من نوع الغرفة أو من الحقل المخصص
+        // فصل عدد الغرف من نوع الغرفة
         let roomCount = 1; // افتراضي
-        // نحاول استخراج عدد الغرف من النوع إذا كان مخزنًا فيه
-        if (typeof roomType === 'string' && roomType.includes(' ')) {
+        let roomTypeName = roomType; // النوع بدون عدد الغرف
+        
+        // محاولة استخراج عدد الغرف من نوع الغرفة
+        if (typeof roomType === 'string' && roomType.includes('X')) {
+          // نفترض التنسيق "نوع الغرفة X عدد الغرف"
+          const parts = roomType.trim().split('X');
+          if (parts.length === 2) {
+            roomTypeName = parts[0].trim(); // نوع الغرفة
+            roomCount = parseInt(parts[1].trim()) || 1; // عدد الغرف
+          }
+        } else if (typeof roomType === 'string' && roomType.includes(' ')) {
           // محاولة استخراج الرقم من النص (مثلاً "2 مزدوجة")
           const parts = roomType.trim().split(/\s+/);
-          const firstPart = parts[0];
-          const numericPart = parseInt(firstPart);
+          const lastPart = parts[parts.length - 1];
+          const numericPart = parseInt(lastPart);
           if (!isNaN(numericPart)) {
             roomCount = numericPart;
-            // تحديث نوع الغرفة بدون الرقم
-            form.querySelector(`[name="type${guestCount}"]`).value = parts.slice(1).join(' ');
+            roomTypeName = parts.slice(0, parts.length - 1).join(' ').trim();
           }
         }
-        // ملء حقل عدد الغرف (إذا وُجد)
+        
+        // ملء حقل نوع الغرفة وعدد الغرف
+        if (form.querySelector(`[name="type${guestCount}"]`)) {
+          form.querySelector(`[name="type${guestCount}"]`).value = roomTypeName;
+        }
         if (form.querySelector(`[name="rooms${guestCount}"]`)) {
           form.querySelector(`[name="rooms${guestCount}"]`).value = roomCount;
         }
