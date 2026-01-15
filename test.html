@@ -556,7 +556,7 @@ function fillEditForm(invoiceData) {
         
         // ملء حقل نوع الغرفة وعدد الغرف
         if (form.querySelector(`[name="type${guestCount}"]`)) {
-          form.querySelector(`[name="type${guestCount}"]`).value = roomTypeName;
+          form.querySelector(`[name="type${guestCount}"]`).value = roomTypeName; // عرض نوع الغرفة فقط
         }
         if (form.querySelector(`[name="rooms${guestCount}"]`)) {
           form.querySelector(`[name="rooms${guestCount}"]`).value = roomCount;
@@ -595,6 +595,23 @@ async function updateInvoice() {
   // جمع بيانات النموذج
   const formData = new FormData(document.getElementById('bookingForm'));
   const data = Object.fromEntries(formData.entries());
+  
+  // دمج نوع الغرفة وعدد الغرف في تنسيق مناسب (مثل "مزدوجة X 1 غرفة")
+  for (let i = 1; i <= 4; i++) {
+    const roomTypeField = document.querySelector(`[name="type${i}"]`);
+    const roomCountField = document.querySelector(`[name="rooms${i}"]`);
+    
+    if (roomTypeField && roomCountField) {
+      const roomType = roomTypeField.value;
+      const roomCount = roomCountField.value || '1';
+      
+      // دمج نوع الغرفة وعدد الغرف في تنسيق مناسب
+      if (roomType && roomCount) {
+        const combinedRoomType = `${roomType} X ${roomCount} غرفة`;
+        data[`type${i}`] = combinedRoomType;
+      }
+    }
+  }
   
   // إرسال طلب التحديث
   try {
