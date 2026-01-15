@@ -128,6 +128,14 @@ function generateInvoice() {
 
 function addGuest() {
   guestCount++;
+  
+  // التحقق من عدم تجاوز الحد الأقصى (4 ضيوف)
+  if (guestCount > 4) {
+    alert("لا يمكن إضافة أكثر من 4 ضيوف");
+    guestCount--; // التراجع عن الزيادة
+    return;
+  }
+  
   // ملاحظة: قمنا بتسمية الحقول مثل amount1, amount2 لتتوافق مع دالة buildInvoiceRow في السكربت
   const div = document.createElement("div");
   div.innerHTML = `
@@ -156,6 +164,12 @@ function addGuest() {
     </div>
   `;
   guestContainer.appendChild(div);
+  
+  // تعطيل الزر إذا وصلنا إلى الحد الأقصى (4 ضيوف)
+  if (guestCount >= 4) {
+    document.getElementById('addGuestBtn').disabled = true;
+    document.getElementById('addGuestBtn').textContent = 'تم الوصول إلى الحد الأقصى (4 ضيوف)';
+  }
 }
 
 function calcNights(i) {
@@ -227,7 +241,13 @@ loginForm.onsubmit = async (e) => {
       
       // تهيئة النموذج
       generateInvoice();
-      guestContainer.innerHTML = ""; guestCount = 0; addGuest();
+      guestContainer.innerHTML = ""; 
+      guestCount = 0; 
+      // تفعيل زر الإضافة إذا كان معطلًا
+      const addGuestBtn = document.getElementById('addGuestBtn');
+      addGuestBtn.disabled = false;
+      addGuestBtn.textContent = '+ إضافة ضيف';
+      addGuest();
       loadInvoices();
     } else {
       msg.textContent = data.message || "خطأ في تسجيل الدخول";
@@ -264,6 +284,10 @@ bookingForm.onsubmit = async (e) => {
       bookingForm.reset();
       guestContainer.innerHTML = ""; 
       guestCount = 0; 
+      // تفعيل زر الإضافة إذا كان معطلًا
+      const addGuestBtn = document.getElementById('addGuestBtn');
+      addGuestBtn.disabled = false;
+      addGuestBtn.textContent = '+ إضافة ضيف';
       addGuest();
       generateInvoice();
       
@@ -394,6 +418,10 @@ window.onload = async () => {
       document.getElementById('appBox').style.display = "block";
       
       generateInvoice();
+      // تفعيل زر الإضافة إذا كان معطلًا
+      const addGuestBtn = document.getElementById('addGuestBtn');
+      addGuestBtn.disabled = false;
+      addGuestBtn.textContent = '+ إضافة ضيف';
       addGuest(); // إضافة صف ضيف واحد افتراضياً
       loadInvoices();
     } else {
@@ -587,6 +615,10 @@ function resetFormToDefault() {
   // إزالة جميع الضيوف وإضافة واحد فقط
   document.getElementById('guestContainer').innerHTML = '';
   guestCount = 0;
+  // تفعيل زر الإضافة إذا كان معطلًا
+  const addGuestBtn = document.getElementById('addGuestBtn');
+  addGuestBtn.disabled = false;
+  addGuestBtn.textContent = '+ إضافة ضيف';
   addGuest();
   
   // إنشاء رقم فاتورة جديد
