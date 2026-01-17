@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <title>لوحة التحكم - Odoo Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --shadow-sm: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+            --shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+            --shadow-lg: 0 1rem 3rem rgba(0,0,0,0.175);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);            color: var(--gray-800);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* وضع الشاشة الرئيسية (الأيقونات) */
+        .main-dashboard {
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        /* وضع التطبيق الكامل (ملء الشاشة) */
+        .app-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .app-fullscreen.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from { 
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to { 
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* شريط الأدوات العلوي */
+        .app-toolbar {
+            background: var(--secondary);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .app-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toolbar-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.1rem;            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .toolbar-btn.refresh {
+            background: rgba(46, 204, 113, 0.2);
+        }
+
+        .toolbar-btn.refresh:hover {
+            background: rgba(46, 204, 113, 0.3);
+        }
+
+        /* محتوى التطبيق */
+        .app-content-full {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+        }
+
+        /* منطقة التطبيقات - تصميم Odoo Grid */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 24px;
+            margin: 32px auto;
+            max-width: 1400px;
+            padding: 0 16px;
+        }
+
+        .app-tile {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 24px 16px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .app-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.08), transparent 70%);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .app-tile:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+
+        .app-tile:hover::before {
+            opacity: 1;
+        }
+
+        .app-icon-container {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-size: 32px;
+            transition: var(--transition);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .app-tile:hover .app-icon-container {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .app-name {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--gray-800);
+            margin-top: 8px;
+            display: block;
+            transition: var(--transition);            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .app-tile:hover .app-name {
+            color: var(--primary-dark);
+        }
+
+        /* الترويسة */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* منطقة البحث */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 14px 24px 14px 50px;
+            border-radius: 50px;
+            border: 2px solid var(--gray-300);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            font-size: 1.2rem;
+        }
+
+        /* محتوى تجريبي */
+        .demo-content {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin: 0 auto;
+            max-width: 800px;
+            min-height: calc(100vh - 150px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .demo-content i {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .demo-content h2 {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            color: var(--secondary);
+        }
+
+        .demo-content p {
+            color: var(--gray-700);
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 20px;            max-width: 650px;
+        }
+
+        .demo-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .demo-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.5);
+        }
+
+        /* الاستجابة للشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .apps-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 16px;
+                padding: 0 12px;
+            }
+            
+            .app-icon-container {
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+            }
+            
+            .app-name {
+                font-size: 0.95rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .app-toolbar {
+                padding: 12px 20px;
+            }
+            
+            .app-title {                font-size: 1.2rem;
+            }
+            
+            .toolbar-btn, .back-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .apps-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 12px;
+                padding: 0 8px;
+            }
+            
+            .app-icon-container {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+            
+            .app-name {
+                font-size: 0.85rem;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .demo-content {
+                padding: 25px;
+                min-height: calc(100vh - 120px);
+            }
+            
+            .demo-content i {
+                font-size: 4rem;
+            }
+            
+            .demo-content h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- الشاشة الرئيسية (لوحة الأيقونات) -->
+    <div class="main-dashboard" id="mainDashboard">
+        <!-- منطقة البحث -->        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="appSearch" placeholder="ابحث عن تطبيق..." aria-label="بحث عن تطبيق">
+        </div>
+
+        <!-- الترويسة -->
+        <div class="header">
+            <h1><i class="fas fa-th-large"></i> لوحة التحكم</h1>
+            <p>اختر التطبيق الذي تريد العمل عليه من القائمة أدناه</p>
+        </div>
+
+        <!-- شبكة التطبيقات (مثل Odoo) -->
+        <div class="apps-grid">
+            <div class="app-tile" data-app="invoices">
+                <div class="app-icon-container">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <span class="app-name">إدارة الفواتير</span>
+            </div>
+            
+            <div class="app-tile" data-app="hotels">
+                <div class="app-icon-container" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <i class="fas fa-hotel"></i>
+                </div>
+                <span class="app-name">حجوزات الفنادق</span>
+            </div>
+            
+            <div class="app-tile" data-app="ramadan">
+                <div class="app-icon-container" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <span class="app-name">عروض رمضان</span>
+            </div>
+            
+            <div class="app-tile" data-app="customers">
+                <div class="app-icon-container" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span class="app-name">إدارة العملاء</span>
+            </div>
+            
+            <div class="app-tile" data-app="reports">
+                <div class="app-icon-container" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <span class="app-name">التقارير</span>
+            </div>
+            
+            <div class="app-tile" data-app="settings">
+                <div class="app-icon-container" style="background: linear-gradient(135deg, #34495e, #2c3e50);">                    <i class="fas fa-cog"></i>
+                </div>
+                <span class="app-name">الإعدادات</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج تطبيق إدارة الفواتير (ملء الشاشة) -->
+    <div id="invoicesApp" class="app-fullscreen">
+        <div class="app-toolbar">
+            <div class="toolbar-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h2 class="app-title">إدارة الفواتير</h2>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn refresh" onclick="refreshApp('invoices')">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="app-content-full">
+            <!-- 
+            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة إدارة الفواتير 🚨 🚨 🚨
+            احذف المحتوى التجريبي وضع كودك الكامل هنا
+            -->
+            <div class="demo-content">
+                <i class="fas fa-file-invoice"></i>
+                <h2>إدارة الفواتير</h2>
+                <p>هذا هو مكان كود HTML الكامل لصفحة إدارة الفواتير. يمكنك استبدال هذا المحتوى بأي كود HTML كامل مع جميع الأنماط والسكربتات الخاصة به.</p>
+                <p>الصفحة تعمل في وضع ملء الشاشة مع شريط أدوات علوي يحتوي على زر الرجوع والتحديث.</p>
+                <button class="demo-btn" onclick="alert('تم تنفيذ الإجراء بنجاح!')">
+                    <i class="fas fa-plus-circle"></i> إنشاء فاتورة جديدة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج تطبيق حجوزات الفنادق (ملء الشاشة) -->
+    <div id="hotelsApp" class="app-fullscreen">
+        <div class="app-toolbar">
+            <div class="toolbar-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h2 class="app-title">حجوزات الفنادق</h2>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn refresh" onclick="refreshApp('hotels')">                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="app-content-full">
+            <!-- 
+            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة حجوزات الفنادق 🚨 🚨 🚨
+            احذف المحتوى التجريبي وضع كودك الكامل هنا
+            -->
+            <div class="demo-content">
+                <i class="fas fa-hotel"></i>
+                <h2>حجوزات الفنادق</h2>
+                <p>هذا هو مكان كود HTML الكامل لصفحة حجوزات الفنادق. يمكنك لصق كودك الكامل هنا مع الحفاظ على الهيكل الأساسي.</p>
+                <p>التصميم كامل الشاشة مع شريط أدوات احترافي في الأعلى للتحكم في العرض.</p>
+                <button class="demo-btn" onclick="alert('تم البحث عن الفنادق بنجاح!')">
+                    <i class="fas fa-search"></i> بحث عن فنادق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج تطبيق عروض رمضان (ملء الشاشة) -->
+    <div id="ramadanApp" class="app-fullscreen">
+        <div class="app-toolbar">
+            <div class="toolbar-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h2 class="app-title">عروض رمضان</h2>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn refresh" onclick="refreshApp('ramadan')">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="app-content-full">
+            <!-- 
+            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة عروض رمضان 🚨 🚨 🚨
+            احذف المحتوى التجريبي وضع كودك الكامل هنا
+            -->
+            <div class="demo-content">
+                <i class="fas fa-moon"></i>
+                <h2>عروض رمضان</h2>
+                <p>هذا هو مكان كود HTML الكامل لصفحة عروض رمضان. يمكنك استبدال هذا المحتوى بكودك الخاص.</p>
+                <p>الصفحة تعمل بسلاسة مع جميع أنواع المحتوى في وضع ملء الشاشة.</p>
+                <button class="demo-btn" onclick="alert('تم اختيار العرض بنجاح!')">
+                    <i class="fas fa-shopping-cart"></i> اطلب الآن
+                </button>
+            </div>        </div>
+    </div>
+
+    <!-- نموذج تطبيق إدارة العملاء (ملء الشاشة) -->
+    <div id="customersApp" class="app-fullscreen">
+        <div class="app-toolbar">
+            <div class="toolbar-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h2 class="app-title">إدارة العملاء</h2>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn refresh" onclick="refreshApp('customers')">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="app-content-full">
+            <!-- 
+            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة إدارة العملاء 🚨 🚨 🚨
+            احذف المحتوى التجريبي وضع كودك الكامل هنا
+            -->
+            <div class="demo-content">
+                <i class="fas fa-users"></i>
+                <h2>إدارة العملاء</h2>
+                <p>هذا هو مكان كود HTML الكامل لصفحة إدارة العملاء. يمكنك لصق كودك الكامل مع جميع المكتبات التي يحتاجها.</p>
+                <p>الواجهة سلسة وسريعة حتى مع كمية كبيرة من البيانات.</p>
+                <button class="demo-btn" onclick="alert('تم إضافة عميل جديد بنجاح!')">
+                    <i class="fas fa-user-plus"></i> إضافة عميل
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج تطبيق التقارير (ملء الشاشة) -->
+    <div id="reportsApp" class="app-fullscreen">
+        <div class="app-toolbar">
+            <div class="toolbar-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h2 class="app-title">التقارير</h2>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn refresh" onclick="refreshApp('reports')">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>        <div class="app-content-full">
+            <!-- 
+            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة التقارير 🚨 🚨 🚨
+            احذف المحتوى التجريبي وضع كودك الكامل هنا
+            -->
+            <div class="demo-content">
+                <i class="fas fa-chart-bar"></i>
+                <h2>التقارير</h2>
+                <p>هذا هو مكان كود HTML الكامل لصفحة التقارير. يمكنك استخدام أي مكتبات رسوم بيانية مثل Chart.js أو أي مكتبات أخرى.</p>
+                <p>الواجهة سريعة حتى مع المحتوى الثقيل والرسوم البيانية المعقدة.</p>
+                <button class="demo-btn" onclick="alert('تم إنشاء التقرير بنجاح!')">
+                    <i class="fas fa-file-download"></i> تنزيل التقرير
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج تطبيق الإعدادات (ملء الشاشة) -->
+    <div id="settingsApp" class="app-fullscreen">
+        <div class="app-toolbar">
+            <div class="toolbar-left">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <h2 class="app-title">الإعدادات</h2>
+            </div>
+            <div class="toolbar-right">
+                <button class="toolbar-btn refresh" onclick="refreshApp('settings')">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="app-content-full">
+            <!-- 
+            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة الإعدادات 🚨 🚨 🚨
+            احذف المحتوى التجريبي وضع كودك الكامل هنا
+            -->
+            <div class="demo-content">
+                <i class="fas fa-cog"></i>
+                <h2>الإعدادات</h2>
+                <p>هذا هو مكان كود HTML الكامل لصفحة الإعدادات. يمكنك لصق أي كود HTML كامل هنا.</p>
+                <p>النظام يحافظ على استقرار الأداء مع جميع التطبيقات في وضع ملء الشاشة.</p>
+                <button class="demo-btn" onclick="alert('تم حفظ الإعدادات بنجاح!')">
+                    <i class="fas fa-save"></i> حفظ الإعدادات
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>        document.addEventListener('DOMContentLoaded', function() {
+            console.log('تم تحميل لوحة التحكم بنجاح');
+            
+            // النقر على الأيقونات في الشاشة الرئيسية
+            document.querySelectorAll('.app-tile').forEach(tile => {
+                tile.addEventListener('click', function() {
+                    const appId = this.getAttribute('data-app');
+                    openAppFullscreen(appId);
+                });
+            });
+            
+            // البحث عن التطبيقات
+            document.getElementById('appSearch').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                filterApps(searchTerm);
+            });
+        });
+        
+        // فتح التطبيق في وضع ملء الشاشة
+        function openAppFullscreen(appId) {
+            // إخفاء الشاشة الرئيسية
+            document.getElementById('mainDashboard').style.display = 'none';
+            
+            // إظهار التطبيق المطلوب
+            const appElement = document.getElementById(${appId}App);
+            if (appElement) {
+                appElement.classList.add('active');
+                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+            }
+        }
+        
+        // العودة إلى الشاشة الرئيسية
+        function goBack() {
+            // إخفاء جميع التطبيقات
+            document.querySelectorAll('.app-fullscreen').forEach(app => {
+                app.classList.remove('active');
+            });
+            
+            // إظهار الشاشة الرئيسية
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.body.style.overflow = 'auto'; // إعادة تمكين التمرير
+        }
+        
+        // تحديث التطبيق الحالي
+        function refreshApp(appId) {
+            const appElement = document.getElementById(${appId}App);
+            if (appElement) {
+                // يمكن هنا إعادة تحميل المحتوى أو تنفيذ أي إجراء تحديث
+                console.log(جارٍ تحديث التطبيق: ${appId});
+                                // مثال على تحديث بسيط:
+                appElement.classList.remove('active');
+                setTimeout(() => {
+                    appElement.classList.add('active');
+                    alert(✓ تم تحديث ${getAppName(appId)} بنجاح!);
+                }, 300);
+            }
+        }
+        
+        // الحصول على اسم التطبيق
+        function getAppName(appId) {
+            const apps = {
+                'invoices': 'إدارة الفواتير',
+                'hotels': 'حجوزات الفنادق',
+                'ramadan': 'عروض رمضان',
+                'customers': 'إدارة العملاء',
+                'reports': 'التقارير',
+                'settings': 'الإعدادات'
+            };
+            return apps[appId] || 'التطبيق';
+        }
+        
+        // تصفية التطبيقات في البحث
+        function filterApps(searchTerm) {
+            document.querySelectorAll('.app-tile').forEach(tile => {
+                const appName = tile.querySelector('.app-name').textContent.toLowerCase();
+                const appId = tile.getAttribute('data-app');
+                
+                if (searchTerm === '' || appName.includes(searchTerm) || appId.includes(searchTerm)) {
+                    tile.style.display = 'block';
+                    tile.style.opacity = '1';
+                } else {
+                    tile.style.display = 'none';
+                    tile.style.opacity = '0.5';
+                }
+            });
+        }
+        
+        // التعامل مع زر الرجوع في لوحة المفاتيح
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || (e.key === 'Backspace' && !e.target.isContentEditable && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA')) {
+                if (document.querySelector('.app-fullscreen.active')) {
+                    goBack();
+                }
+            }
+        });
+        
+        // منع إغلاق الصفحة عن طريق الخطأ
+        window.addEventListener('beforeunload', function(e) {
+            if (document.querySelector('.app-fullscreen.active')) {                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
