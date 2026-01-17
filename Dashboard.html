@@ -521,19 +521,686 @@
             </div>
         </div>
         <div class="app-content-full">
-            <!-- 
-            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة إدارة الفواتير 🚨 🚨 🚨
-            احذف المحتوى التجريبي وضع كودك الكامل هنا
-            -->
-            <div class="demo-content">
-                <i class="fas fa-file-invoice"></i>
-                <h2>إدارة الفواتير</h2>
-                <p>هذا هو مكان كود HTML الكامل لصفحة إدارة الفواتير. يمكنك استبدال هذا المحتوى بأي كود HTML كامل مع جميع الأنماط والسكربتات الخاصة به.</p>
-                <p>الصفحة تعمل في وضع ملء الشاشة مع شريط أدوات علوي يحتوي على زر الرجوع والتحديث.</p>
-                <button class="demo-btn" onclick="alert('تم تنفيذ الإجراء بنجاح!')">
-                    <i class="fas fa-plus-circle"></i> إنشاء فاتورة جديدة
-                </button>
-            </div>
+    <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نموذج طلب حجز (يدوي)</title>
+<style>
+  body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; color: #333; margin: 0; }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+  h2 { text-align: center; margin-bottom: 20px; color: #444; }
+  .row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
+  .group-title { font-weight: bold; margin-top: 25px; background: #f1f3f5; padding: 10px; border-radius: 6px; border-right: 4px solid #007bff; margin-bottom: 10px; }
+  button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+  button:hover { background: #005fcc; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
+  #addGuestBtn { background: #28a745; margin-top: 10px; width: auto; display: block; margin-right: auto; margin-left: auto; padding: 10px 30px; }
+  #addGuestBtn:hover { background: #218838; }
+  #totalField { background-color: #e9ecef; font-weight: bold; color: #333; font-size: 1.1em; text-align: center; }
+    
+  /* Invoice Section Styles */
+  .invoices-section { margin-top: 40px; border-top: 2px dashed #ddd; padding-top: 20px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+  .refresh-btn { background: #6c757d; width: auto; padding: 8px 15px; margin: 0; font-size: 14px; }
+  .refresh-btn:hover { background: #5a6268; }
+    
+  .invoice-card { background: #fdfdfd; border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+  .invoice-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  .invoice-info { text-align: right; }
+  .invoice-info strong { display: block; margin-bottom: 4px; color: #333; font-size: 1.1em; }
+  .invoice-info span { font-size: 12px; color: #777; display: block; }
+  .invoice-link { text-decoration: none; background: #dc3545; color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; white-space: nowrap; margin-right: 10px; }
+  .invoice-link:hover { background: #c82333; }
+  .empty-msg { text-align: center; color: #777; padding: 20px; font-style: italic; }
+
+  @media (max-width: 600px) { .row { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="container">
+  <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo">
+  <h2>تسجيل دخول النظام</h2>
+  <form id="loginForm">
+    <div class="row">
+      <input type="tel" id="phone" placeholder="رقم الجوال" required>
+    </div>
+    <div class="row">
+      <input type="password" id="password" placeholder="كلمة المرور" required>
+    </div>
+    <button type="submit" id="loginBtn">تسجيل الدخول</button>
+  </form>
+  <p id="loginMsg" style="text-align:center; color:#dc3545; margin-top:10px;"></p>
+</div>
+
+<div id="appBox" class="container" style="display:none;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo" style="margin:0; width:120px;">
+    <div style="text-align: left;">
+      <div style="margin-bottom:5px;">مرحباً، <span id="userName" style="font-weight:bold; color:#007bff;"></span></div>
+      <button onclick="logout()" style="background:#dc3545; padding:5px 15px; border-radius:5px; color:white; border:none; cursor:pointer; font-size:14px; width:auto; margin:0;">تسجيل خروج</button>
+    </div>
+  </div>
+
+  <h2 id="formTitle">نموذج طلب حجز (يدوي)</h2>
+    
+  <div id="editModeAlert" style="display:none; background:#fff3cd; color:#856404; padding:10px; margin-bottom:15px; border:1px solid #ffeeba; border-radius:5px; text-align:center;">
+    أنت الآن في وضع تعديل الفاتورة. <a href="#" onclick="resetFormToDefault(); return false;" style="color:#856404; font-weight:bold;">إلغاء التعديل</a>
+  </div>
+
+  <form id="bookingForm">
+    <div class="row">
+      <input type="text" name="invoice" id="invoiceNumber" placeholder="رقم الفاتورة" required readonly style="background:#f9f9f9;">
+      <input type="text" name="clientName" placeholder="إسم العميل" required>
+    </div>
+    <div class="row">
+      <input type="text" name="clientPhone" placeholder="رقم الجوال" required>
+      <input type="text" name="address" placeholder="العنوان">
+    </div>
+    <div class="row">
+      <input type="email" name="clientEmail" placeholder="البريد الالكتروني">
+    </div>
+      
+    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+      
+    <div class="row">
+      <input type="text" name="hotelName" placeholder="اسم الفندق" required>
+      <input type="text" name="hotelPhone" placeholder="جوال الفندق">
+    </div>
+    <div class="row">
+      <input type="email" name="hotelEmail" placeholder="البريد الفندق">
+      <input type="text" name="todayDate" id="todayField" placeholder="تاريخ اليوم" readonly>
+    </div>
+
+    <div id="guestContainer"></div>
+      
+    <button id="addGuestBtn" type="button" onclick="addGuest()">+ إضافة ضيف</button>
+      
+    <div class="row" style="margin-top:20px;">
+      <label style="padding:10px; font-weight:bold; display:flex; align-items:center;">الإجمالي الكلي (شامل الضريبة):</label>
+      <input type="text" name="total" id="totalField" placeholder="0.00" readonly>
+    </div>
+      
+    <button type="submit" id="sendBtn">إرسال الطلب وإنشاء الفاتورة</button>
+  </form>
+
+  <div class="invoices-section">
+    <div class="section-header">
+      <h3 style="margin:0;">📂 آخر الفواتير</h3>
+      <button type="button" class="refresh-btn" onclick="loadInvoices()">🔄 تحديث</button>
+    </div>
+    <div id="invoiceList"><p class="empty-msg">جاري التحميل...</p></div>
+  </div>
+</div>
+
+<script>
+// رابط Google Apps Script الخاص بك
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBt3Dm6LX1CKwg3Nw1pzz4UeJit6j31GxaON04BmhVXBvWj2ivrjTZ_GB6t-KOtzv0/exec";
+
+let guestCount = 0;
+let currentUser = null;
+let isEditMode = false;
+
+// --- Helper Functions ---
+
+function generateInvoice() {
+  if(isEditMode) return;
+  invoiceNumber.value = "INV-" + Math.floor(Math.random() * 1000000);
+  const d = new Date();
+  todayField.value = formatDateForInput(d); 
+}
+
+function formatDateForInput(dateVal) {
+    if (!dateVal) return "";
+    let d = new Date(dateVal);
+    if (isNaN(d.getTime())) return ""; 
+    
+    // استخدام التوقيت المحلي بدلاً من UTC
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function addGuest() {
+  guestCount++;
+    
+  if (guestCount > 4) {
+    showMessage("لا يمكن إضافة أكثر من 4 ضيوف", "error");
+    guestCount--;
+    return;
+  }
+    
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <div class="group-title">بيانات الضيف ${guestCount}</div>
+    <div class="row">
+      <input name="name${guestCount}" placeholder="اسم الضيف">
+      <input type="date" name="checkin${guestCount}" onchange="calcNights(${guestCount})">
+    </div>
+    <div class="row">
+      <input type="date" name="checkout${guestCount}" onchange="calcNights(${guestCount})">
+      <input name="nights${guestCount}" placeholder="عدد الليالي" readonly style="background:#eee;">
+    </div>
+    <div class="row">
+      <select name="type${guestCount}">
+        <option value="">— نوع الغرفة —</option>
+        <option value="مفردة">مفردة</option>
+        <option value="مزدوجة">مزدوجة</option>
+        <option value="ثلاثية">ثلاثية</option>
+        <option value="رباعية">رباعية</option>
+        <option value="خماسية">خماسية</option>
+      </select>
+      <input type="number" name="rooms${guestCount}" value="1" min="1" placeholder="عدد الغرف">
+    </div>
+    <div class="row">
+      <input type="number" name="amount${guestCount}" step="0.01" placeholder="السعر الإجمالي لهذا الضيف" oninput="calcTotal()" style="border-color: #28a745;">
+    </div>
+  `;
+  guestContainer.appendChild(div);
+    
+  if (guestCount >= 4) {
+    document.getElementById('addGuestBtn').disabled = true;
+    document.getElementById('addGuestBtn').textContent = 'تم الوصول إلى الحد الأقصى (4 ضيوف)';
+  }
+}
+
+function calcNights(i) {
+  const form = document.getElementById('bookingForm');
+  const checkin = form[`checkin${i}`].value;
+  const checkout = form[`checkout${i}`].value;
+  if (checkin && checkout) {
+    const diff = new Date(checkout) - new Date(checkin);
+    const nights = Math.max(0, diff / (1000 * 60 * 60 * 24));
+    form[`nights${i}`].value = nights + " ليلة";
+  } else {
+    form[`nights${i}`].value = "";
+  }
+}
+
+function calcTotal() {
+  let sum = 0;
+  const inputs = document.querySelectorAll("input[name^='amount']");
+  inputs.forEach(input => {
+    sum += parseFloat(input.value) || 0;
+  });
+  document.getElementById('totalField').value = sum.toFixed(2);
+}
+
+async function postToGAS(data) {
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  } catch (error) {
+    throw new Error("فشل الاتصال بالسيرفر");
+  }
+}
+
+// دالة دمج بيانات الغرف قبل الإرسال
+function prepareGuestDataForSubmission(data) {
+    for (let i = 1; i <= guestCount; i++) {
+        const typeField = `type${i}`;
+        const roomsField = `rooms${i}`;
+        if (data[typeField] || data[roomsField]) {
+            const roomType = data[typeField] || "";
+            const roomCount = data[roomsField] || "1";
+            if(roomType) {
+                data[typeField] = `${roomType} X ${roomCount} غرفة`;
+            }
+        }
+    }
+    return data;
+}
+
+// --- Event Handlers ---
+
+loginForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const msg = document.getElementById('loginMsg');
+    
+  btn.disabled = true;
+  btn.textContent = "جاري التحقق...";
+  msg.textContent = "";
+
+  try {
+    const payload = {
+      action: "login",
+      phone_number: document.getElementById('phone').value,
+      password: document.getElementById('password').value
+    };
+
+    const data = await postToGAS(payload);
+
+    if (data.status === "success") {
+      currentUser = data.user;
+      localStorage.setItem("phone_number", currentUser.phone_number);
+        
+      document.getElementById('userName').textContent = currentUser.username;
+      document.getElementById('loginBox').style.display = "none";
+      document.getElementById('appBox').style.display = "block";
+        
+      generateInvoice();
+      guestContainer.innerHTML = ""; 
+      guestCount = 0; 
+      const addGuestBtn = document.getElementById('addGuestBtn');
+      addGuestBtn.disabled = false;
+      addGuestBtn.textContent = '+ إضافة ضيف';
+      addGuest();
+      loadInvoices();
+    } else {
+      msg.textContent = data.message || "خطأ في تسجيل الدخول";
+    }
+  } catch (err) {
+    msg.textContent = "خطأ في الاتصال: " + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "تسجيل الدخول";
+  }
+};
+
+bookingForm.onsubmit = async (e) => {
+    e.preventDefault();
+    if (isEditMode) {
+        await handleUpdateInvoice();
+    } else {
+        await handleCreateInvoice();
+    }
+};
+
+async function handleCreateInvoice() {
+  const btn = document.getElementById('sendBtn');
+  if(!showConfirm("هل أنت متأكد من إرسال البيانات؟")) return;
+
+  btn.disabled = true;
+  btn.textContent = "جاري الإرسال...";
+
+  const formData = new FormData(bookingForm);
+  let data = Object.fromEntries(formData.entries());
+  data.userId = currentUser.id;
+  data.action = "create_invoice";
+  
+  data = prepareGuestDataForSubmission(data);
+
+  try {
+    const res = await postToGAS(data);
+    if (res.status === "success") {
+      showMessage("✅ تم الحفظ بنجاح!", "success");
+      resetFormToDefault();
+      setTimeout(loadInvoices, 1500);
+    } else {
+      showMessage("⚠️ حدث خطأ: " + res.message, "error");
+    }
+  } catch (err) {
+    showMessage("❌ فشل الاتصال: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = isEditMode ? "تحديث الفاتورة" : "إرسال الطلب وإنشاء الفاتورة";
+  }
+}
+
+async function handleUpdateInvoice() {
+    const btn = document.getElementById('sendBtn');
+    if (!showConfirm("هل أنت متأكد من تحديث بيانات الفاتورة؟")) return;
+    
+    btn.disabled = true;
+    btn.textContent = "جاري التحديث...";
+    
+    const formData = new FormData(document.getElementById('bookingForm'));
+    let data = Object.fromEntries(formData.entries());
+    
+    data = prepareGuestDataForSubmission(data);
+    
+    try {
+        const payload = {
+            action: "update_invoice",
+            invoice_no: data.invoice,
+            updated_data: data,
+            phone_number: currentUser.phone_number
+        };
+        
+        const response = await postToGAS(payload);
+        if (response.status === "success") {
+            showMessage("✅ تم تحديث الفاتورة بنجاح!", "success");
+            resetFormToDefault();
+            loadInvoices();
+        } else {
+            showMessage("⚠️ حدث خطأ أثناء التحديث: " + response.message, "error");
+        }
+    } catch (err) {
+        showMessage("❌ فشل الاتصال أثناء التحديث: " + err.message, "error");
+    } finally {
+        btn.disabled = false;
+        if(isEditMode) {
+             btn.textContent = "تحديث الفاتورة";
+        } else {
+             btn.textContent = "إرسال الطلب وإنشاء الفاتورة";
+        }
+    }
+}
+
+async function loadInvoices() {
+  const list = document.getElementById('invoiceList');
+  list.innerHTML = '<p class="empty-msg">جاري تحميل الفواتير...</p>';
+    
+  if (!currentUser) return;
+
+  try {
+    const payload = {
+      action: "get_invoices",
+      userId: currentUser.id,
+      role: currentUser.role
+    };
+
+    const data = await postToGAS(payload);
+    
+    if (!data.invoices || data.invoices.length === 0) {
+      list.innerHTML = '<p class="empty-msg">لا توجد فواتير مسجلة اليوم.</p>';
+      return;
+    }
+
+    let html = "";
+    data.invoices.forEach(inv => {
+      let buttonsHtml = '';
+      if (currentUser && currentUser.role === "admin") {
+        buttonsHtml = `<button class="edit-btn" onclick="showEditInvoice('${inv.invoice_no}')">تعديل</button><button class="delete-btn" onclick="deleteInvoice('${inv.invoice_no}')">حذف</button>`;
+      }
+      html += `
+        <div class="invoice-card">
+          <div class="invoice-info">
+            <strong>${inv.name || 'بدون اسم'}</strong>
+            <span>فاتورة: ${inv.invoice_no || '#'} | ${inv.date}</span>
+          </div>
+          <div style="display: flex; gap: 5px;">
+            <a class="invoice-link" target="_blank" href="${inv.link}">عرض PDF</a>
+            ${buttonsHtml}
+          </div>
+        </div>
+      `;
+    });
+    list.innerHTML = html;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      .edit-btn, .delete-btn { width: auto; padding: 8px 12px; margin: 0; font-size: 14px; border-radius: 5px; border: none; cursor: pointer; }
+      .edit-btn { background: #ffc107; color: #212529; } .edit-btn:hover { background: #e0a800; }
+      .delete-btn { background: #dc3545; color: white; } .delete-btn:hover { background: #c82333; }
+    `;
+    if (!document.querySelector('#invoice-buttons-style')) {
+      style.id = 'invoice-buttons-style';
+      document.head.appendChild(style);
+    }
+
+  } catch (err) {
+    list.innerHTML = '<p class="empty-msg" style="color:red">فشل تحميل القائمة</p>';
+    console.error(err);
+  }
+}
+
+async function logout() {
+  const phone = localStorage.getItem("phone_number");
+  if(phone) {
+    postToGAS({ action: "logout", phone_number: phone }).catch(()=>{});
+  }
+  currentUser = null;
+  localStorage.removeItem("phone_number");
+  document.getElementById('loginBox').style.display = "block";
+  document.getElementById('appBox').style.display = "none";
+  document.getElementById('loginForm').reset();
+}
+
+window.onload = async () => {
+  const phone = localStorage.getItem("phone_number");
+  if (!phone) return;
+
+  document.getElementById('loginMsg').textContent = "استعادة الجلسة...";
+
+  try {
+    const res = await postToGAS({ action: "check_session", phone_number: phone });
+    
+    if (res.status === "success") {
+      currentUser = res.user;
+      document.getElementById('userName').textContent = currentUser.username;
+      document.getElementById('loginBox').style.display = "none";
+      document.getElementById('appBox').style.display = "block";
+        
+      generateInvoice();
+      const addGuestBtn = document.getElementById('addGuestBtn');
+      addGuestBtn.disabled = false;
+      addGuestBtn.textContent = '+ إضافة ضيف';
+      addGuest(); 
+      loadInvoices();
+    } else {
+      localStorage.removeItem("phone_number");
+    }
+  } catch (err) {
+    console.error("Session check failed", err);
+  } finally {
+    document.getElementById('loginMsg').textContent = "";
+  }
+};
+
+async function showEditInvoice(invoiceNo) {
+  if (!currentUser || currentUser.role !== "admin") {
+    showMessage("لا تملك صلاحيات التعديل", "error");
+    return;
+  }
+  
+  const btn = document.querySelector(`button[onclick="showEditInvoice('${invoiceNo}')"]`);
+  const originalText = btn ? btn.textContent : "تعديل";
+  if(btn) btn.textContent = "جاري الجلب...";
+    
+  try {
+    const payload = {
+      action: "get_invoice_by_number",
+      invoice_no: invoiceNo,
+      phone_number: currentUser.phone_number
+    };
+      
+    const response = await postToGAS(payload);
+    if (response.status === "success" && response.invoice) {
+      fillEditForm(response.invoice);
+    } else {
+      showMessage("فشل في جلب بيانات الفاتورة", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("حدث خطأ أثناء جلب بيانات الفاتورة", "error");
+  } finally {
+    if(btn) btn.textContent = originalText;
+  }
+}
+
+function fillEditForm(invoiceData) {
+  console.log("البيانات القادمة من السيرفر:", invoiceData); 
+
+  try {
+      isEditMode = true; 
+      
+      document.getElementById('formTitle').textContent = "تعديل الفاتورة: " + invoiceData.invoice;
+      document.getElementById('sendBtn').textContent = "تحديث الفاتورة";
+      document.getElementById('editModeAlert').style.display = "block";
+      
+      document.getElementById('invoiceNumber').value = invoiceData.invoice || '';
+      document.getElementById('invoiceNumber').readOnly = true;
+      
+      document.querySelector('[name="clientName"]').value = invoiceData.clientName || '';
+      document.querySelector('[name="clientPhone"]').value = invoiceData.clientPhone || '';
+      document.querySelector('[name="address"]').value = invoiceData.address || '';
+      document.querySelector('[name="clientEmail"]').value = invoiceData.clientEmail || '';
+      document.querySelector('[name="hotelName"]').value = invoiceData.hotelName || '';
+      document.querySelector('[name="hotelPhone"]').value = invoiceData.hotelPhone || '';
+      document.querySelector('[name="hotelEmail"]').value = invoiceData.hotelEmail || '';
+      
+      document.querySelector('[name="todayDate"]').value = formatDateForInput(invoiceData.todayDate);
+      
+      document.getElementById('guestContainer').innerHTML = '';
+      guestCount = 0;
+      
+      // تحديد عدد الضيوف
+      let maxGuestIndex = 0;
+      for (let i = 1; i <= 4; i++) {
+        if (invoiceData[`name${i}`] || invoiceData[`amount${i}`]) {
+          maxGuestIndex = i;
+        }
+      }
+
+      if (maxGuestIndex === 0) maxGuestIndex = 1;
+      
+      for (let i = 1; i <= maxGuestIndex; i++) {
+          addGuest(); 
+          
+          const form = document.getElementById('bookingForm');
+          
+          if(form.querySelector(`[name="name${guestCount}"]`)) {
+             form.querySelector(`[name="name${guestCount}"]`).value = invoiceData[`name${i}`] || '';
+             form.querySelector(`[name="checkin${guestCount}"]`).value = formatDateForInput(invoiceData[`checkin${i}`]);
+             form.querySelector(`[name="checkout${guestCount}"]`).value = formatDateForInput(invoiceData[`checkout${i}`]);
+             form.querySelector(`[name="nights${guestCount}"]`).value = invoiceData[`nights${i}`] || '';
+             form.querySelector(`[name="amount${guestCount}"]`).value = invoiceData[`amount${i}`] || '';
+
+             // معالجة نوع الغرفة
+             const rawType = invoiceData[`type${i}`] || '';
+             let roomTypeName = rawType;
+             let roomCount = 1;
+              
+             if (rawType && rawType.includes(' X ')) {
+                 const parts = rawType.split(' X ');
+                 if (parts.length >= 2) {
+                     roomTypeName = parts[0].trim();
+                     const countMatch = parts[1].match(/\d+/); 
+                     if (countMatch) {
+                         roomCount = parseInt(countMatch[0]);
+                     }
+                 }
+             }
+              
+             const typeSelect = form.querySelector(`[name="type${guestCount}"]`);
+             if(typeSelect) typeSelect.value = roomTypeName;
+              
+             const roomsInput = form.querySelector(`[name="rooms${guestCount}"]`);
+             if(roomsInput) roomsInput.value = roomCount;
+          }
+      }
+      
+      // إذا كان الإجمالي فارغ في الفاتورة، نقوم بحسابه
+      if(invoiceData.total && invoiceData.total !== "") {
+          document.getElementById('totalField').value = invoiceData.total;
+      } else {
+          calcTotal();
+      }
+      
+      document.getElementById('appBox').scrollIntoView({ behavior: 'smooth' });
+
+  } catch (error) {
+      console.error("Error filling form:", error);
+      showMessage("بيانات الفاتورة غير مكتملة، يرجى مراجعة لوحة التحكم", "error");
+  }
+}
+
+function resetFormToDefault() {
+  isEditMode = false;
+  
+  document.getElementById('formTitle').textContent = "نموذج طلب حجز (يدوي)";
+  document.getElementById('sendBtn').textContent = "إرسال الطلب وإنشاء الفاتورة";
+  document.getElementById('editModeAlert').style.display = "none";
+  
+  document.getElementById('invoiceNumber').readOnly = false;
+  document.getElementById('bookingForm').reset();
+  
+  document.getElementById('guestContainer').innerHTML = '';
+  guestCount = 0;
+  
+  const addGuestBtn = document.getElementById('addGuestBtn');
+  addGuestBtn.disabled = false;
+  addGuestBtn.textContent = '+ إضافة ضيف';
+  
+  addGuest();
+  generateInvoice();
+}
+
+async function deleteInvoice(invoiceNo) {
+  if (!currentUser || currentUser.role !== "admin") {
+    showMessage("لا تملك صلاحيات الحذف", "error");
+    return;
+  }
+    
+  if (!showConfirm("هل أنت متأكد من حذف الفاتورة رقم " + invoiceNo + "؟\n\nتحذير: سيتم حذف الفاتورة وملف PDF من جوجل درايف.")) return;
+    
+  try {
+    const payload = {
+      action: "delete_invoice",
+      invoice_no: invoiceNo,
+      phone_number: currentUser.phone_number
+    };
+      
+    const response = await postToGAS(payload);
+    if (response.status === "success") {
+      showMessage("✅ تم حذف الفاتورة بنجاح!", "success");
+      loadInvoices(); 
+    } else {
+      showMessage("⚠️ حدث خطأ أثناء الحذف: " + response.message, "error");
+    }
+  } catch (err) {
+    showMessage("❌ فشل الاتصال أثناء الحذف: " + err.message, "error");
+  }
+}
+</script>
+
+<div id="messageBox" style="position:fixed; top:20px; right:20px; z-index:9999; display:none;">
+  <div id="messageContent" style="padding:15px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:250px; max-width:400px; color:white;"></div>
+</div>
+
+<div id="confirmBox" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:none; justify-content:center; align-items:center;">
+  <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:400px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+    <h3 style="margin-top:0; color:#333;">تأكيد الإجراء</h3>
+    <p id="confirmText" style="color:#666; font-size:16px; margin:20px 0;"></p>
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button id="confirmYesBtn" style="background:#dc3545; width:auto; padding:8px 25px;">نعم</button>
+      <button onclick="closeConfirm()" style="background:#6c757d; width:auto; padding:8px 25px;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showMessage(msg, type) {
+  const box = document.getElementById('messageBox');
+  const content = document.getElementById('messageContent');
+  content.textContent = msg;
+  content.style.backgroundColor = type === "error" ? "#dc3545" : "#28a745";
+  box.style.display = "block";
+  setTimeout(() => { box.style.display = "none"; }, 3000);
+}
+
+let confirmCallback = null;
+function showConfirm(text) {
+  return new Promise((resolve) => {
+    document.getElementById('confirmText').textContent = text;
+    document.getElementById('confirmBox').style.display = "flex";
+    document.getElementById('confirmYesBtn').onclick = () => {
+      closeConfirm();
+      resolve(true);
+    };
+    window.closeConfirm = () => {
+        document.getElementById('confirmBox').style.display = "none";
+        resolve(false);
+    };
+  });
+}
+window.closeConfirm = function() {
+    document.getElementById('confirmBox').style.display = "none";
+};
+</script>
+
+</body>
+</html>
         </div>
     </div>
 
@@ -553,20 +1220,188 @@
             </div>
         </div>
         <div class="app-content-full">
-            <!-- 
-            🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة حجوزات الفنادق 🚨 🚨 🚨
-            احذف المحتوى التجريبي وضع كودك الكامل هنا
-            -->
-            <div class="demo-content">
-                <i class="fas fa-hotel"></i>
-                <h2>حجوزات الفنادق</h2>
-                <p>هذا هو مكان كود HTML الكامل لصفحة حجوزات الفنادق. يمكنك لصق كودك الكامل هنا مع الحفاظ على الهيكل الأساسي.</p>
-                <p>التصميم كامل الشاشة مع شريط أدوات احترافي في الأعلى للتحكم في العرض.</p>
-                <button class="demo-btn" onclick="alert('تم البحث عن الفنادق بنجاح!')">
-                    <i class="fas fa-search"></i> بحث عن فنادق
-                </button>
-            </div>
+          <!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>البحث عن شركات تشغيل الفنادق</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: "Tajawal", sans-serif; }
+  /* تحسين شكل القائمة المنسدلة */
+  #suggestions { max-height: 300px; overflow-y: auto; }
+</style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+<div class="max-w-4xl mx-auto">
+
+<h1 class="text-3xl font-bold mb-6 text-gray-800">🔎 البحث عن شركات تشغيل الفنادق</h1>
+
+<div class="mb-6 relative">
+  <input id="q" type="search" placeholder="اكتب اسم الفندق..." 
+         class="w-full p-4 rounded-xl shadow border border-gray-300 focus:ring focus:ring-blue-300" 
+         autocomplete="off" />
+  
+  <div id="suggestions" class="bg-white shadow-xl rounded-xl border border-gray-200 hidden absolute w-full mt-1 z-50"></div>
+</div>
+
+<div id="results" class="space-y-4"></div>
+</div>
+
+<script>
+// ⚠️ ضع رابط السكربت الجديد الخاص بك هنا
+const API_URL = "https://script.google.com/macros/s/AKfycbx1KTtXXjV8s5s26fAmrF2MVqnaVUbsmApVbacMeXvLGVcrfZ6pdVqAxnUbzCpqPNrCug/exec";
+const API_KEY = "123";
+
+/* JSONP helper */
+function jsonpFetch(url){
+  return new Promise((resolve, reject) => {
+    const callbackName = "cb_" + Math.random().toString(36).substr(2,9);
+    window[callbackName] = data => { resolve(data); delete window[callbackName]; script.remove(); };
+    const script = document.createElement("script");
+    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + callbackName;
+    script.onerror = () => reject(new Error("Network error"));
+    document.body.appendChild(script);
+  });
+}
+
+/* Elements */
+const q = document.getElementById("q");
+const results = document.getElementById("results");
+const suggestionsBox = document.getElementById("suggestions");
+
+/* 1. تحميل القائمة عند فتح الصفحة */
+let allHotels = []; // ستخزن كائنات {id, name}
+async function loadHotelsList(){
+  try {
+    const data = await jsonpFetch(`${API_URL}?action=getAllHotels&key=${API_KEY}`);
+    allHotels = data.list || [];
+    console.log("Hotels loaded:", allHotels.length);
+  } catch(err){ console.error("فشل تحميل القائمة", err); }
+}
+loadHotelsList();
+
+/* 2. التعامل مع الكتابة (إظهار الاقتراحات فقط) */
+q.addEventListener("input", () => {
+  const val = q.value.trim();
+  if(val.length < 1) {
+    suggestionsBox.classList.add("hidden");
+    return;
+  }
+  
+  // تصفية القائمة
+  const filtered = allHotels.filter(h => h.name.toLowerCase().includes(val.toLowerCase()));
+  
+  renderSuggestions(filtered);
+});
+
+/* عرض الاقتراحات */
+function renderSuggestions(list){
+  if(list.length === 0){
+    suggestionsBox.classList.add("hidden");
+    return;
+  }
+  
+  // نأخذ أول 10 نتائج فقط
+  suggestionsBox.innerHTML = list.slice(0, 10).map(item => `
+    <div class="px-4 py-3 hover:bg-blue-50 cursor-pointer text-gray-700 border-b last:border-0 transition"
+         onclick="selectSuggestion('${item.name.replace(/'/g, "\\'")}')">
+       🏨 ${item.name}
+    </div>
+  `).join("");
+  
+  suggestionsBox.classList.remove("hidden");
+}
+
+/* 3. عند اختيار فندق من القائمة (المطابقة 100%) */
+function selectSuggestion(name){
+  q.value = name; // وضع الاسم في الحقل
+  suggestionsBox.classList.add("hidden"); // إخفاء القائمة
+  runSearch(name, true); // ⚠️ True تعني بحث دقيق 100%
+}
+
+/* تنفيذ البحث */
+function runSearch(text, exact){
+  results.innerHTML = `<div class="p-4 bg-white rounded-xl shadow animate-pulse">جاري البحث عن "${text}"...</div>`;
+  
+  const url = `${API_URL}?action=getHotel&name=${encodeURIComponent(text)}&exact=${exact}&key=${API_KEY}`;
+  
+  jsonpFetch(url).then(data => {
+    if(data.error) throw new Error(data.error);
+    render(data);
+  }).catch(err => {
+    results.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-xl">حدث خطأ: ${err.message}</div>`;
+  });
+}
+
+/* رسم النتائج */
+function render(data){
+  if(!data.exists || !data.results || data.results.length === 0){
+    results.innerHTML = `<div class="p-6 bg-yellow-50 border border-yellow-200 rounded-xl text-center">
+      <p class="text-xl text-yellow-800 font-bold">⚠️ عذراً</p>
+      <p class="text-gray-600 mt-2">لا يوجد فندق مطابق لهذا الاسم تماماً في قاعدة البيانات.</p>
+    </div>`;
+    return;
+  }
+
+  let html = "";
+  data.results.forEach(hotel => {
+    html += `<div class="p-6 bg-white rounded-2xl shadow-md border border-gray-100 mb-4">
+      <h2 class="text-2xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+        <span>🏨</span> ${hotel.hotelName}
+      </h2>
+      ${renderOperators(hotel.operators)}
+    </div>`;
+  });
+  results.innerHTML = html;
+}
+
+function renderOperators(list){
+  if(!list || list.length === 0) return `<div class="bg-gray-50 p-4 rounded-lg text-gray-500 text-center">لا توجد شركات مشغلة مسجلة.</div>`;
+  
+  return `<div class="grid md:grid-cols-2 gap-4">
+    ${list.map((op, index) => {
+      const emails = op.emails ? op.emails.toString().split(",") : [];
+      const whats = op.whatsapps ? op.whatsapps.toString().split(",") : [];
+      
+      return `<div class="p-4 bg-gray-50 border border-gray-200 rounded-xl hover:shadow-md transition">
+        <button onclick="document.getElementById('op-${index}').classList.toggle('hidden')"
+                class="w-full text-left text-lg font-bold text-gray-800 mb-2 flex justify-between items-center">
+          👔 ${op.operatorName} 
+          <span class="text-gray-400">▼</span>
+        </button>
+        <div id="op-${index}" class="space-y-3 hidden">
+          <div>
+            <div class="text-xs font-bold text-gray-500 uppercase mb-1">البريد الإلكتروني</div>
+            ${emails.length ? emails.map(e => 
+              `<a href="mailto:${e.trim()}" class="flex items-center gap-2 text-blue-600 hover:underline text-sm mb-1">
+                 ✉️ ${e.trim()}
+               </a>`
+            ).join("") : '<span class="text-xs text-gray-400">غير متوفر</span>'}
+          </div>
+          <div>
+            <div class="text-xs font-bold text-gray-500 uppercase mb-1">أرقام التواصل</div>
+            ${whats.length ? whats.map(num => {
+               const clean = num.replace(/\D/g,"");
+               return `<div class="flex items-center justify-between bg-white p-2 rounded border border-gray-200 mb-1">
+                 <a href="tel:${clean}" class="text-gray-700 font-mono text-sm">${num.trim()}</a>
+                 <a href="https://wa.me/${clean}" target="_blank" class="text-green-600 hover:text-green-700">
+                   <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                 </a>
+               </div>`;
+            }).join("") : '<span class="text-xs text-gray-400">غير متوفر</span>'}
+          </div>
         </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+</script>
+</body>
+</html>
+                  </div>
     </div>
 
     <!-- نموذج تطبيق عروض رمضان (ملء الشاشة) -->
