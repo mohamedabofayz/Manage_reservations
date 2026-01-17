@@ -47,7 +47,8 @@
 
         body {
             font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);            color: var(--gray-800);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--gray-800);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
@@ -96,7 +97,8 @@
             padding: 15px 25px;
             display: flex;
             align-items: center;
-            justify-content: space-between;            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -145,7 +147,8 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            font-size: 1.1rem;            cursor: pointer;
+            font-size: 1.1rem;
+            cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
@@ -194,6 +197,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .app-tile::before {
             content: '';
             position: absolute;
@@ -243,7 +247,8 @@
             color: var(--gray-800);
             margin-top: 8px;
             display: block;
-            transition: var(--transition);            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: var(--transition);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .app-tile:hover .app-name {
@@ -292,6 +297,7 @@
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
         }
+
         .search-container input:focus {
             outline: none;
             border-color: var(--primary);
@@ -341,7 +347,8 @@
             color: var(--gray-700);
             line-height: 1.8;
             font-size: 1.1rem;
-            margin-bottom: 20px;            max-width: 650px;
+            margin-bottom: 20px;
+            max-width: 650px;
         }
 
         .demo-btn {
@@ -390,7 +397,8 @@
                 padding: 12px 20px;
             }
             
-            .app-title {                font-size: 1.2rem;
+            .app-title {
+                font-size: 1.2rem;
             }
             
             .toolbar-btn, .back-btn {
@@ -439,7 +447,8 @@
 <body>
     <!-- الشاشة الرئيسية (لوحة الأيقونات) -->
     <div class="main-dashboard" id="mainDashboard">
-        <!-- منطقة البحث -->        <div class="search-container">
+        <!-- منطقة البحث -->
+        <div class="search-container">
             <i class="fas fa-search search-icon"></i>
             <input type="text" id="appSearch" placeholder="ابحث عن تطبيق..." aria-label="بحث عن تطبيق">
         </div>
@@ -488,7 +497,8 @@
             </div>
             
             <div class="app-tile" data-app="settings">
-                <div class="app-icon-container" style="background: linear-gradient(135deg, #34495e, #2c3e50);">                    <i class="fas fa-cog"></i>
+                <div class="app-icon-container" style="background: linear-gradient(135deg, #34495e, #2c3e50);">
+                    <i class="fas fa-cog"></i>
                 </div>
                 <span class="app-name">الإعدادات</span>
             </div>
@@ -537,7 +547,8 @@
                 <h2 class="app-title">حجوزات الفنادق</h2>
             </div>
             <div class="toolbar-right">
-                <button class="toolbar-btn refresh" onclick="refreshApp('hotels')">                    <i class="fas fa-sync-alt"></i>
+                <button class="toolbar-btn refresh" onclick="refreshApp('hotels')">
+                    <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
         </div>
@@ -586,7 +597,8 @@
                 <button class="demo-btn" onclick="alert('تم اختيار العرض بنجاح!')">
                     <i class="fas fa-shopping-cart"></i> اطلب الآن
                 </button>
-            </div>        </div>
+            </div>
+        </div>
     </div>
 
     <!-- نموذج تطبيق إدارة العملاء (ملء الشاشة) -->
@@ -635,7 +647,8 @@
                     <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
-        </div>        <div class="app-content-full">
+        </div>
+        <div class="app-content-full">
             <!-- 
             🚨 🚨 🚨 مكان لصق كود HTML الكامل لصفحة التقارير 🚨 🚨 🚨
             احذف المحتوى التجريبي وضع كودك الكامل هنا
@@ -684,7 +697,8 @@
         </div>
     </div>
 
-    <script>        document.addEventListener('DOMContentLoaded', function() {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('تم تحميل لوحة التحكم بنجاح');
             
             // النقر على الأيقونات في الشاشة الرئيسية
@@ -708,7 +722,7 @@
             document.getElementById('mainDashboard').style.display = 'none';
             
             // إظهار التطبيق المطلوب
-            const appElement = document.getElementById(${appId}App);
+            const appElement = document.getElementById(`${appId}App`);
             if (appElement) {
                 appElement.classList.add('active');
                 document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
@@ -729,15 +743,16 @@
         
         // تحديث التطبيق الحالي
         function refreshApp(appId) {
-            const appElement = document.getElementById(${appId}App);
+            const appElement = document.getElementById(`${appId}App`);
             if (appElement) {
                 // يمكن هنا إعادة تحميل المحتوى أو تنفيذ أي إجراء تحديث
-                console.log(جارٍ تحديث التطبيق: ${appId});
-                                // مثال على تحديث بسيط:
+                console.log(`جارٍ تحديث التطبيق: ${appId}`);
+                
+                // مثال على تحديث بسيط:
                 appElement.classList.remove('active');
                 setTimeout(() => {
                     appElement.classList.add('active');
-                    alert(✓ تم تحديث ${getAppName(appId)} بنجاح!);
+                    alert(`✓ تم تحديث ${getAppName(appId)} بنجاح!`);
                 }, 300);
             }
         }
@@ -782,7 +797,8 @@
         
         // منع إغلاق الصفحة عن طريق الخطأ
         window.addEventListener('beforeunload', function(e) {
-            if (document.querySelector('.app-fullscreen.active')) {                e.preventDefault();
+            if (document.querySelector('.app-fullscreen.active')) {
+                e.preventDefault();
                 e.returnValue = '';
             }
         });
