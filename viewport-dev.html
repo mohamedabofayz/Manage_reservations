@@ -35,13 +35,13 @@
         .clickable-link { cursor: pointer; text-decoration: underline; color: #0d6efd; transition: 0.2s; }
         .clickable-link:hover { color: #0a58ca; font-weight: bold; }
         
-        .badge-status { padding:6px 12px; border-radius:30px; font-weight:500; font-size:0.8rem; display: inline-block; }
-        .bg-success { background-color: #198754; color: white; }
-        .bg-warning { background-color: #ffc107; color: #212529; }
-        .bg-danger { background-color: #dc3545; color: white; }
-        .bg-secondary { background-color: #6c757d; color: white; }
-        .bg-info { background-color: #0dcaf0; color: #212529; }
-        .bg-dark { background-color: #212529; color: white; }
+        .badge-status { padding:8px 14px; border-radius:30px; font-weight:600; font-size:0.85rem; display: inline-block; text-align: center; min-width: 130px; }
+        .bg-success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .bg-warning { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; }
+        .bg-danger { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+        .bg-info { background-color: #cff4fc; color: #055160; border: 1px solid #b6effb; }
+        .bg-secondary { background-color: #e2e3e5; color: #41464b; border: 1px solid #d3d6d8; }
+        .bg-dark { background-color: #ced4da; color: #1c1f23; border: 1px solid #adb5bd; }
 
         .stat-card { flex: 1; min-width: 220px; border-right: 5px solid #eee; transition: transform 0.2s; }
         .stat-card:hover { transform: translateY(-3px); }
@@ -136,6 +136,9 @@
                                         <option>مكتمل</option>
                                         <option>قيد التنفيذ</option>
                                         <option>ملغي</option>
+                                        <option>لم يتم إنشاء فاتورة</option>
+                                        <option>لم يتم تعين رقم الحجز</option>
+                                        <option>لم يتم التحويل للفندق</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
@@ -251,7 +254,7 @@
                 <td><span class="clickable-link" style="color: #333; text-decoration: none;" data-idx="${idx}" data-type="employee">👤 ${item.employee}</span></td>
                 <td>${item.date}</td>
                 <td style="color: #198754; font-weight: 700;">${formatSAR(item.ourProfit)}</td>
-                <td><span class="badge-status bg-${getStatusColor(item.status)}">${item.status}</span></td>
+                <td>${getStatusBadge(item.status)}</td>
             </tr>
         `).join('');
 
@@ -301,13 +304,18 @@
         });
     }
 
-    function getStatusColor(s) {
+    function getStatusBadge(s) {
+        let colorClass = 'secondary';
         switch (s) {
-            case 'مكتمل': return 'success';
-            case 'قيد التنفيذ': return 'warning';
-            case 'ملغي': return 'danger';
-            default: return 'secondary';
+            case 'مكتمل': colorClass = 'success'; break;
+            case 'قيد التنفيذ': colorClass = 'warning'; break;
+            case 'ملغي': colorClass = 'danger'; break;
+            case 'لم يتم إنشاء فاتورة': colorClass = 'secondary'; break;
+            case 'لم يتم تعين رقم الحجز': colorClass = 'info'; break;
+            case 'لم يتم التحويل للفندق': colorClass = 'dark'; break;
+            default: colorClass = 'secondary';
         }
+        return `<span class="badge-status bg-${colorClass}">${s}</span>`;
     }
 
     function showPopup(title, content) {
@@ -356,7 +364,7 @@
                     <p style="margin: 0; font-size: 0.9rem; color: #5d4037;">${d.notes || 'لا توجد ملاحظات لهذه الفاتورة'}</p>
                 </div>
                 <div style="text-align: center; margin-top: 10px;">
-                    <span class="badge-status bg-${getStatusColor(d.status)}">${d.status}</span>
+                    ${getStatusBadge(d.status)}
                 </div>
             </div>
         `);
@@ -365,8 +373,6 @@
     function showEmployee(idx) {
         const employeeName = filteredData[idx].employee;
         const currentItem = filteredData[idx];
-        
-        // جلب جميع عمليات الموظف من البيانات المعروضة حالياً (بناءً على الفلتر)
         const employeeHistory = filteredData.filter(i => i.employee === employeeName);
         const totalCommissions = employeeHistory.reduce((s, i) => s + parseNum(i.employeeShare), 0);
 
@@ -400,7 +406,7 @@
                                     <td style="color: #0d6efd;">#${h.ourInvoiceNo || '---'}</td>
                                     <td>${h.date}</td>
                                     <td style="font-weight: bold; color: #198754;">${formatSAR(h.employeeShare)}</td>
-                                    <td><span class="badge-status bg-${getStatusColor(h.status)}" style="font-size: 0.7rem; padding: 4px 8px;">${h.status}</span></td>
+                                    <td>${getStatusBadge(h.status)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
