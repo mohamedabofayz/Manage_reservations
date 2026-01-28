@@ -3,38 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نموذج طلب حجز (يدوي)</title>
+<title>نموذج إنشاء الفاتورة</title>
 <style>
-  body { font-family: "Tajawal", sans-serif; background: #f7f7f7; padding: 20px; color: #333; margin: 0; }
-  .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
-  h2 { text-align: center; margin-bottom: 20px; color: #444; }
-  .row { display: flex; gap: 10px; margin-bottom: 12px; }
-  .row input, .row select { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
-  .group-title { font-weight: bold; margin-top: 25px; background: #f1f3f5; padding: 10px; border-radius: 6px; border-right: 4px solid #007bff; margin-bottom: 10px; }
-  button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #007bff; color: white; font-size: 17px; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-  button:hover { background: #005fcc; }
-  button:disabled { background: #ccc; cursor: not-allowed; }
-  img.logo { width: 180px; display: block; margin: 10px auto 20px auto; }
-  #addGuestBtn { background: #28a745; margin-top: 10px; width: auto; display: block; margin-right: auto; margin-left: auto; padding: 10px 30px; }
-  #addGuestBtn:hover { background: #218838; }
-  #totalField { background-color: #e9ecef; font-weight: bold; color: #333; font-size: 1.1em; text-align: center; }
-    
-  /* Invoice Section Styles */
-  .invoices-section { margin-top: 40px; border-top: 2px dashed #ddd; padding-top: 20px; }
-  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-  .refresh-btn { background: #6c757d; width: auto; padding: 8px 15px; margin: 0; font-size: 14px; }
-  .refresh-btn:hover { background: #5a6268; }
-    
-  .invoice-card { background: #fdfdfd; border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-  .invoice-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-  .invoice-info { text-align: right; }
-  .invoice-info strong { display: block; margin-bottom: 4px; color: #333; font-size: 1.1em; }
-  .invoice-info span { font-size: 12px; color: #777; display: block; }
-  .invoice-link { text-decoration: none; background: #dc3545; color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; white-space: nowrap; margin-right: 10px; }
-  .invoice-link:hover { background: #c82333; }
-  .empty-msg { text-align: center; color: #777; padding: 20px; font-style: italic; }
+  :root {
+    --dark-blue: #0A2E5A;
+    --green: #27AE60;
+    --orange: #F39C12;
+    --yellow: #F1C40F;
+    --red: #E74C3C;
+    --light-blue: #E8F4FD;
+    --gray: #6C757D;
+    --border: #dee2e6;
+    --card-bg: #ffffff;
+    --input-bg: #f8f9fa;
+    --modal-bg: #ffffff;
+    --text-main: #212529;
+    --text-muted: #6c757d;
+    --success: #28a745;
+    --danger: #dc3545;
+    --bg-light: #F0F4F8;
+    --font-sans: 'Tajawal', sans-serif;
+  }
 
-  @media (max-width: 600px) { .row { flex-direction: column; } }
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-light);
+    padding: 20px;
+    color: var(--text-main);
+    margin: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: auto;
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid white;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--dark-blue);
+    font-weight: 700;
+  }
+
+  .row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .row input,
+  .row select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    box-sizing: border-box;
+    background-color: var(--input-bg);
+  }
+
+  .row input:focus,
+  .row select:focus {
+    outline: none;
+    border-color: var(--dark-blue);
+    box-shadow: 0 0 0 3px rgba(10, 46, 90, 0.15);
+  }
+
+  .group-title {
+    font-weight: bold;
+    margin-top: 25px;
+    background: var(--light-blue);
+    padding: 10px;
+    border-radius: 6px;
+    border-right: 4px solid var(--dark-blue);
+    margin-bottom: 10px;
+    color: var(--dark-blue);
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--dark-blue);
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(10, 46, 90, 0.3);
+  }
+
+  button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-success {
+    background: var(--green);
+  }
+  .btn-success:hover {
+    background: #218838;
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+  .btn-danger:hover {
+    background: #c82333;
+  }
+
+  .btn-warning {
+    background: var(--orange);
+    color: white;
+  }
+  .btn-warning:hover {
+    background: #e0a800;
+  }
+
+  img.logo {
+    width: 180px;
+    display: block;
+    margin: 10px auto 20px auto;
+  }
+
+  #addGuestBtn {
+    background: var(--success);
+    margin-top: 10px;
+    width: auto;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 10px 30px;
+    border-radius: 8px;
+  }
+
+  #totalField {
+    background-color: #e9ecef;
+    font-weight: bold;
+    color: var(--text-main);
+    font-size: 1.1em;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  /* Invoice Section Styles */
+  .invoices-section {
+    margin-top: 40px;
+    border-top: 2px dashed var(--border);
+    padding-top: 20px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .refresh-btn {
+    background: var(--gray);
+    width: auto;
+    padding: 8px 15px;
+    margin: 0;
+    font-size: 14px;
+    border-radius: 8px;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  .refresh-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+  }
+
+  .invoice-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+
+  .invoice-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .invoice-info {
+    text-align: right;
+  }
+
+  .invoice-info strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--dark-blue);
+    font-size: 1.1em;
+  }
+
+  .invoice-info span {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+  }
+
+  .invoice-link {
+    text-decoration: none;
+    background: var(--dark-blue); /* ← تم التغيير هنا */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    margin-right: 10px;
+    transition: all 0.2s;
+  }
+
+  .invoice-link:hover {
+    background: #082244; /* لون داكن قليلاً عند التحويم */
+    transform: translateY(-1px);
+  }
+
+  .empty-msg {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 20px;
+    font-style: italic;
+  }
+
+  #editModeAlert {
+    background: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ffeeba;
+    border-radius: 5px;
+    text-align: center;
+    display: none;
+  }
+
+  #editModeAlert a {
+    color: #856404;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    .row {
+      flex-direction: column;
+    }
+    .container {
+      padding: 15px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -51,22 +291,22 @@
     </div>
     <button type="submit" id="loginBtn">تسجيل الدخول</button>
   </form>
-  <p id="loginMsg" style="text-align:center; color:#dc3545; margin-top:10px;"></p>
+  <p id="loginMsg" style="text-align:center; color:var(--danger); margin-top:10px;"></p>
 </div>
 
 <div id="appBox" class="container" style="display:none;">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <img class="logo" src="https://iroom.ai/web/image/website/1/logo/iroom?unique=89c76a1" alt="Logo" style="margin:0; width:120px;">
     <div style="text-align: left;">
-      <div style="margin-bottom:5px;">مرحباً، <span id="userName" style="font-weight:bold; color:#007bff;"></span></div>
-      <button onclick="logout()" style="background:#dc3545; padding:5px 15px; border-radius:5px; color:white; border:none; cursor:pointer; font-size:14px; width:auto; margin:0;">تسجيل خروج</button>
+      <div style="margin-bottom:5px;">مرحباً، <span id="userName" style="font-weight:bold; color:var(--dark-blue);"></span></div>
+      <button onclick="logout()" class="btn-danger" style="padding:5px 15px; font-size:14px; width:auto; margin:0;">تسجيل خروج</button>
     </div>
   </div>
 
   <h2 id="formTitle">نموذج طلب حجز (يدوي)</h2>
     
-  <div id="editModeAlert" style="display:none; background:#fff3cd; color:#856404; padding:10px; margin-bottom:15px; border:1px solid #ffeeba; border-radius:5px; text-align:center;">
-    أنت الآن في وضع تعديل الفاتورة. <a href="#" onclick="resetFormToDefault(); return false;" style="color:#856404; font-weight:bold;">إلغاء التعديل</a>
+  <div id="editModeAlert">
+    أنت الآن في وضع تعديل الفاتورة. <a href="#" onclick="resetFormToDefault(); return false;">إلغاء التعديل</a>
   </div>
 
   <form id="bookingForm">
@@ -82,14 +322,14 @@
       <input type="email" name="clientEmail" placeholder="البريد الالكتروني">
     </div>
       
-    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+    <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
       
     <div class="row">
       <input type="text" name="hotelName" placeholder="اسم الفندق" required>
       <input type="text" name="hotelPhone" placeholder="جوال الفندق">
     </div>
     <div class="row">
-      <input type="email" name="hotelEmail" placeholder="البريد الفندق">
+      <input type="email" name="hotelEmail" placeholder="البريد الفندقي">
       <input type="text" name="todayDate" id="todayField" placeholder="تاريخ اليوم" readonly>
     </div>
 
@@ -107,7 +347,7 @@
 
   <div class="invoices-section">
     <div class="section-header">
-      <h3 style="margin:0;">📂 آخر الفواتير</h3>
+      <h3 style="margin:0; color:var(--dark-blue);">📂 آخر الفواتير</h3>
       <button type="button" class="refresh-btn" onclick="loadInvoices()">🔄 تحديث</button>
     </div>
     <div id="invoiceList"><p class="empty-msg">جاري التحميل...</p></div>
@@ -136,7 +376,6 @@ function formatDateForInput(dateVal) {
     let d = new Date(dateVal);
     if (isNaN(d.getTime())) return ""; 
     
-    // استخدام التوقيت المحلي بدلاً من UTC
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -175,7 +414,7 @@ function addGuest() {
       <input type="number" name="rooms${guestCount}" value="1" min="1" placeholder="عدد الغرف">
     </div>
     <div class="row">
-      <input type="number" name="amount${guestCount}" step="0.01" placeholder="السعر الإجمالي لهذا الضيف" oninput="calcTotal()" style="border-color: #28a745;">
+      <input type="number" name="amount${guestCount}" step="0.01" placeholder="السعر الإجمالي لهذا الضيف" oninput="calcTotal()" style="border-color: var(--success);">
     </div>
   `;
   guestContainer.appendChild(div);
@@ -220,7 +459,6 @@ async function postToGAS(data) {
   }
 }
 
-// دالة دمج بيانات الغرف قبل الإرسال
 function prepareGuestDataForSubmission(data) {
     for (let i = 1; i <= guestCount; i++) {
         const typeField = `type${i}`;
@@ -387,7 +625,7 @@ async function loadInvoices() {
     data.invoices.forEach(inv => {
       let buttonsHtml = '';
       if (currentUser && currentUser.role === "admin") {
-        buttonsHtml = `<button class="edit-btn" onclick="showEditInvoice('${inv.invoice_no}')">تعديل</button><button class="delete-btn" onclick="deleteInvoice('${inv.invoice_no}')">حذف</button>`;
+        buttonsHtml = `<button class="btn-warning" style="width:auto;padding:8px 12px;margin:0;font-size:14px;" onclick="showEditInvoice('${inv.invoice_no}')">تعديل</button><button class="btn-danger" style="width:auto;padding:8px 12px;margin:0;font-size:14px;" onclick="deleteInvoice('${inv.invoice_no}')">حذف</button>`;
       }
       html += `
         <div class="invoice-card">
@@ -403,20 +641,8 @@ async function loadInvoices() {
       `;
     });
     list.innerHTML = html;
-
-    const style = document.createElement('style');
-    style.textContent = `
-      .edit-btn, .delete-btn { width: auto; padding: 8px 12px; margin: 0; font-size: 14px; border-radius: 5px; border: none; cursor: pointer; }
-      .edit-btn { background: #ffc107; color: #212529; } .edit-btn:hover { background: #e0a800; }
-      .delete-btn { background: #dc3545; color: white; } .delete-btn:hover { background: #c82333; }
-    `;
-    if (!document.querySelector('#invoice-buttons-style')) {
-      style.id = 'invoice-buttons-style';
-      document.head.appendChild(style);
-    }
-
   } catch (err) {
-    list.innerHTML = '<p class="empty-msg" style="color:red">فشل تحميل القائمة</p>';
+    list.innerHTML = '<p class="empty-msg" style="color:var(--danger);">فشل تحميل القائمة</p>';
     console.error(err);
   }
 }
@@ -496,8 +722,6 @@ async function showEditInvoice(invoiceNo) {
 }
 
 function fillEditForm(invoiceData) {
-  console.log("البيانات القادمة من السيرفر:", invoiceData); 
-
   try {
       isEditMode = true; 
       
@@ -521,7 +745,6 @@ function fillEditForm(invoiceData) {
       document.getElementById('guestContainer').innerHTML = '';
       guestCount = 0;
       
-      // تحديد عدد الضيوف
       let maxGuestIndex = 0;
       for (let i = 1; i <= 4; i++) {
         if (invoiceData[`name${i}`] || invoiceData[`amount${i}`]) {
@@ -543,7 +766,6 @@ function fillEditForm(invoiceData) {
              form.querySelector(`[name="nights${guestCount}"]`).value = invoiceData[`nights${i}`] || '';
              form.querySelector(`[name="amount${guestCount}"]`).value = invoiceData[`amount${i}`] || '';
 
-             // معالجة نوع الغرفة
              const rawType = invoiceData[`type${i}`] || '';
              let roomTypeName = rawType;
              let roomCount = 1;
@@ -567,7 +789,6 @@ function fillEditForm(invoiceData) {
           }
       }
       
-      // إذا كان الإجمالي فارغ في الفاتورة، نقوم بحسابه
       if(invoiceData.total && invoiceData.total !== "") {
           document.getElementById('totalField').value = invoiceData.total;
       } else {
@@ -636,12 +857,12 @@ async function deleteInvoice(invoiceNo) {
 </div>
 
 <div id="confirmBox" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:none; justify-content:center; align-items:center;">
-  <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:400px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
-    <h3 style="margin-top:0; color:#333;">تأكيد الإجراء</h3>
-    <p id="confirmText" style="color:#666; font-size:16px; margin:20px 0;"></p>
+  <div style="background:var(--card-bg); padding:25px; border-radius:10px; width:90%; max-width:400px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.2);">
+    <h3 style="margin-top:0; color:var(--dark-blue);">تأكيد الإجراء</h3>
+    <p id="confirmText" style="color:var(--text-muted); font-size:16px; margin:20px 0;"></p>
     <div style="display:flex; gap:10px; justify-content:center;">
-      <button id="confirmYesBtn" style="background:#dc3545; width:auto; padding:8px 25px;">نعم</button>
-      <button onclick="closeConfirm()" style="background:#6c757d; width:auto; padding:8px 25px;">إلغاء</button>
+      <button id="confirmYesBtn" class="btn-danger" style="width:auto; padding:8px 25px;">نعم</button>
+      <button onclick="closeConfirm()" class="btn-warning" style="width:auto; padding:8px 25px;">إلغاء</button>
     </div>
   </div>
 </div>
@@ -651,7 +872,7 @@ function showMessage(msg, type) {
   const box = document.getElementById('messageBox');
   const content = document.getElementById('messageContent');
   content.textContent = msg;
-  content.style.backgroundColor = type === "error" ? "#dc3545" : "#28a745";
+  content.style.backgroundColor = type === "error" ? "var(--danger)" : "var(--success)";
   box.style.display = "block";
   setTimeout(() => { box.style.display = "none"; }, 3000);
 }
@@ -678,3 +899,4 @@ window.closeConfirm = function() {
 
 </body>
 </html>
+
